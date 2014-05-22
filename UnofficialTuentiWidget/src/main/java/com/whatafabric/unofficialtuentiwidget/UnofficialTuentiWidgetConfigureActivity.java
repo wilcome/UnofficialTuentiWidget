@@ -1,0 +1,223 @@
+/**
+ * Created by Enrique García Orive on 21/05/14.
+ */
+
+package com.whatafabric.unofficialtuentiwidget;
+
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.RemoteViews;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+
+
+/**
+ * The configuration screen for the {@link UnofficialTuentiWidget UnofficialTuentiWidget} AppWidget.
+ */
+public class UnofficialTuentiWidgetConfigureActivity extends Activity {
+
+    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    EditText tuUserText;
+    EditText tuPasswordText;
+    private int seconds = 3600;
+    protected static final String FILENAME = "UnoficialTuentiData";
+
+    public UnofficialTuentiWidgetConfigureActivity() {
+        super();
+    }
+
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        Log.d("UnofficialTuentiWidgetConfigureActivity:onCreate ", "begin");
+
+        // Set the result to CANCELED.  This will cause the widget host to cancel
+        // out of the widget placement if the user presses the back button.
+        setResult(RESULT_CANCELED);
+
+        setContentView(R.layout.unofficial_tuenti_widget_configure);
+        tuUserText = (EditText)findViewById(R.id.tu_user);
+        tuPasswordText = (EditText)findViewById(R.id.tu_password);
+        findViewById(R.id.create_tuentiwidget).setOnClickListener(mOnClickListener);
+
+        // Find the widget id from the intent.
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            mAppWidgetId = extras.getInt(
+                    AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
+
+        // If this activity was started with an intent without an app widget ID, finish with an error.
+        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            finish();
+            return;
+        }
+
+        Log.d("UnofficialTuentiWidgetConfigureActivity:onCreate ", "mAppWidgetId = " + mAppWidgetId);
+        tuUserText.setText("user@email.com");
+        tuPasswordText.setText("password");
+        tuPasswordText.requestFocus();
+    }
+
+    View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        public void onClick(View v) {
+            final Context context = UnofficialTuentiWidgetConfigureActivity.this;
+            Log.d("UnofficialTuentiWidgetConfigureActivity:mOnClickListener ", "begin");
+
+            // When the button is clicked, store the string locally
+            String widgetTuUserText = tuUserText.getText().toString();
+            String widgetTuPasswordText = tuPasswordText.getText().toString();
+
+            HashMap<String,String> dataMap = new HashMap<String, String>();
+            Log.d("UnofficialTuentiWidgetConfigureActivity:mOnClickListener ","mAppWidgetId = " + mAppWidgetId);
+            Log.d("UnofficialTuentiWidgetConfigureActivity:mOnClickListener ","mAppWidgetId = " + mAppWidgetId);
+            dataMap.put(mAppWidgetId + "_user",widgetTuUserText);
+            dataMap.put(mAppWidgetId + "_password",widgetTuPasswordText);
+            dataMap.put(mAppWidgetId + "_dataMoney","0 €");
+            dataMap.put(mAppWidgetId + "_dataNet","");
+            dataMap.put(mAppWidgetId + "_dataPercentage","100");
+            saveData(context, dataMap);
+
+
+            // It is the responsibility of the configuration activity to update the app widget
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            UnofficialTuentiWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
+
+            // Make sure we pass back the original appWidgetId
+            Intent resultValue = new Intent();
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+
+
+            // New intent for AlarmManager
+            Uri.Builder build = new Uri.Builder();
+            build.appendPath(""+mAppWidgetId);
+            Uri uri = build.build();
+            Intent intentUpdate = new Intent(context, UnofficialTuentiWidget.class);
+            intentUpdate.setAction(UnofficialTuentiWidget.UPDATE);//Set an action anyway to filter it in onReceive()
+            intentUpdate.setData(uri);//One Alarm per instance.
+            //We will need the exact instance to identify the intent.
+            UnofficialTuentiWidget.addUri(mAppWidgetId, uri);
+            intentUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            PendingIntent pendingIntentAlarm = PendingIntent.getBroadcast(UnofficialTuentiWidgetConfigureActivity.this,
+                    0,
+                    intentUpdate,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            //Custom alarm that will update only when the system lets us do it.
+            AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis()+(seconds*1000),
+                    (seconds*1000),
+                    pendingIntentAlarm);
+            Log.d("Ok Button", "Created Alarm. Action = " + UnofficialTuentiWidget.UPDATE +
+                    " URI = " + build.build().toString() +
+                    " Seconds = " + seconds);
+
+            //Create another intent for the case in which we push the widget
+            Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
+            intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE);
+            intentForceUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            PendingIntent pendingIntentForceUpdate = PendingIntent.getBroadcast(context,
+                    0,
+                    intentForceUpdate,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.unofficial_tuenti_widget);
+            views.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
+            views.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
+
+            appWidgetManager.updateAppWidget(mAppWidgetId, views);
+
+            setResult(RESULT_OK, resultValue);
+            finish();
+        }
+    };
+
+    //Save data object needed by the widget in a private file
+    static void saveData(Context context, HashMap<String, String> dataMap) {
+        Log.d("UnofficialTuentiWidgetConfigureActivity:saveData ", "begin");
+        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
+        try {
+            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+            outputStream.writeObject(dataMap);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Read the object from the private file  for this widget.
+    // If there is no file saved, create one with the default values.
+    static HashMap<String, String> loadData(Context context, int appWidgetId) {
+        Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", "begin");
+        HashMap<String,String> dataMap = new HashMap<String, String>();
+        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
+        try {
+            if (file.exists()){
+                Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ","file exists.");
+                FileInputStream fis = new FileInputStream(file);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+
+                dataMap = (HashMap<String, String>) ois.readObject();
+                for (HashMap.Entry<String, String> entry : dataMap.entrySet())
+                {
+                    Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
+                }
+            }else{
+                Log.d("UnofficialTuentiWidgetConfigureActivity:onCreate ","file doesn't exists.");
+                dataMap.put(appWidgetId+"_user","user");
+                dataMap.put(appWidgetId+"_password","password");
+                dataMap.put(appWidgetId+"_dataMoney","0 €");
+                dataMap.put(appWidgetId+"_dataNet","0 MB");
+                dataMap.put(appWidgetId+"_dataPercentage","0");
+
+
+                try {
+                    ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+                    outputStream.writeObject(dataMap);
+                    outputStream.flush();
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e){
+            e.printStackTrace();
+        }
+        return dataMap;
+    }
+
+
+    //Remove the private file
+    static void deleteData(Context context) {
+        Log.d("UnofficialTuentiWidgetConfigureActivity:deleteData ", "begin");
+        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
+        if (file.exists()) {
+            Log.d("UnofficialTuentiWidgetConfigureActivity:deleteData ", "file exists so lets delete it");
+            file.delete();
+            Log.d("UnofficialTuentiWidgetConfigureActivity:deleteData ", "file deleted.");
+        }
+    }
+}
+
+
+
