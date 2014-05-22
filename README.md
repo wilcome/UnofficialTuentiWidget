@@ -9,7 +9,7 @@ Unofficial Tuenti widget that shows your personal account data of Tuenti Movil.
     Variable annulus base on the percentage data.
     The user login/pass data is stored in a private file only accessible if you have root access.
     The access is done by simulating a desktop firefox browser access.
-    Just tested in a couple accounts :'(.
+    Just tested with a couple accounts :'(.
     
 ## License
 
