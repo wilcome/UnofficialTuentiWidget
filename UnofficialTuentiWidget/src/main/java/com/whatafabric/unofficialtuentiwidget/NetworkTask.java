@@ -212,7 +212,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
                         break;
                     } else {
-                        Thread.sleep(2000);
+                        Thread.sleep(4000);
                         Log.d("NetworkTask ", "data still not found. :'(");
                     }
                 }
