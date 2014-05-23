@@ -62,8 +62,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         String dataNet = dataMap.get(appWidgetId + "_dataNet");
         String dataPercentage = dataMap.get(appWidgetId + "_dataPercentage");
 
-        Log.d("NetworkTask ", "user = " + user);
-        Log.d("NetworkTask ", "password = " + password);
+        //Log.d("NetworkTask ", "user = " + user);
+        //Log.d("NetworkTask ", "password = " + password);
         Log.d("NetworkTask ", "dataMoney = " + dataMoney);
         Log.d("NetworkTask ", "dataNet = " + dataNet);
         Log.d("NetworkTask ", "dataPercentage = " + dataPercentage);
@@ -129,8 +129,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
                 String userEncoded = URLEncoder.encode(user, "UTF-8");
                 String passwordEncoded = URLEncoder.encode(password, "UTF-8");
-                Log.d("NetworkTask ", "userEncoded = " + userEncoded);
-                Log.d("NetworkTask ", "passwordEncoded = " + passwordEncoded);
+                //Log.d("NetworkTask ", "userEncoded = " + userEncoded);
+                //Log.d("NetworkTask ", "passwordEncoded = " + passwordEncoded);
                 String urlParameters = "timezone=1&timestamp=1&email=" + userEncoded + "&input_password=" + passwordEncoded + "&csfr=" + csrf;
                 DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
                 wr.writeBytes(urlParameters);
