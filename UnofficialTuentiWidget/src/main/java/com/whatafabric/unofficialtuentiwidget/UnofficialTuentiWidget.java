@@ -48,9 +48,9 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         // When the user deletes the widget, delete the preference associated with it.
-        UnofficialTuentiWidgetConfigureActivity.deleteData(context);
         for (int appWidgetId : appWidgetIds)
         {
+            UnofficialTuentiWidgetConfigureActivity.deleteData(context, appWidgetId);
             cancelAlarmManager(context, appWidgetId);
         }
     }
@@ -78,6 +78,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
             //Check if there is a single widget ID.
             int widgetID = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
+            Log.d("UnofficialTuentiWidget:onReceive","WIDGETID -*-*-*-*-*-*-> "+widgetID);
             //If there is no single ID, call the super implementation.
             if(widgetID == AppWidgetManager.INVALID_APPWIDGET_ID)
                 super.onReceive(context, intent);
@@ -118,7 +119,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         intentUpdate.setData(uris.get(widgetID));
         intentUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetID);
         PendingIntent pendingIntentAlarm = PendingIntent.getBroadcast(context,
-                0,
+                widgetID,
                 intentUpdate,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
