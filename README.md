@@ -1,6 +1,8 @@
 UnofficialTuentiWidget
 ======================
 
+![alt tag](http://i.imgur.com/B8rwtxz.png)
+
 Unofficial Tuenti widget that shows your personal account data of Tuenti Movil.
 
 
