@@ -80,11 +80,17 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
                     AppWidgetManager.INVALID_APPWIDGET_ID);
             Log.d("UnofficialTuentiWidget:onReceive","WIDGETID -*-*-*-*-*-*-> "+widgetID);
             //If there is no single ID, call the super implementation.
-            if(widgetID == AppWidgetManager.INVALID_APPWIDGET_ID)
+            if(widgetID == AppWidgetManager.INVALID_APPWIDGET_ID) {
                 super.onReceive(context, intent);
                 //Otherwise call our onUpdate() passing a one element array, with the retrieved ID.
-            else {
+            }else if (action.equals(FORCE_UPDATE)) {
+                Log.d("UnofficialTuentiWidget:onReceive", "force update");
+                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
+            }else if(action.equals(UPDATE)){
                 Log.d("UnofficialTuentiWidget:onReceive", "kernel update");
+                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
+            }else if(action.equals(AppWidgetManager.EXTRA_APPWIDGET_ID)){
+                Log.d("UnofficialTuentiWidget:onReceive", "other update ?¿");
                 this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
             }
         }
