@@ -4,17 +4,19 @@ package com.whatafabric.unofficialtuentiwidget;
  * Created by Enrique García Orive on 22/05/14.
  */
 
-import android.annotation.TargetApi;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.MalformedURLException;
@@ -29,7 +31,9 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
 
-    private static int numOfTries = 5;//Do not make rhyme
+    private static int SLEEPING_TIME = 5000; //in miliseconds
+    private static int COUNT_LIMIT = 5; //in miliseconds
+
     private Context context;
     private RemoteViews remoteViews;
     private AppWidgetManager appWidgetManager;
@@ -64,9 +68,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
         //Log.d("NetworkTask ", "user = " + user);
         //Log.d("NetworkTask ", "password = " + password);
-        Log.d("NetworkTask ", "dataMoney = " + dataMoney);
-        Log.d("NetworkTask ", "dataNet = " + dataNet);
-        Log.d("NetworkTask ", "dataPercentage = " + dataPercentage);
+        Log.d("NetworkTask:doInBackground ", "OLD dataMoney = " + dataMoney);
+        Log.d("NetworkTask:doInBackground ", "OLD dataNet = " + dataNet);
+        Log.d("NetworkTask:doInBackground ", "OLD dataPercentage = " + dataPercentage);
 
         String result[] = {"","",""};
 
@@ -107,12 +111,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 } else if (sreturned.indexOf("csfr") != 1) {
                     csrfStartIndex = sreturned.indexOf("csfr") + 13;
                 } else {
-                    Log.d("NetworkTask CSRF = ", csrf);
+                    Log.d("NetworkTask:doInBackground ","CSRF NOT found");
                     return result;
                 }
                 int csrfEndIndex = sreturned.indexOf("\"", csrfStartIndex);
                 csrf = sreturned.substring(csrfStartIndex, csrfEndIndex);
-                Log.d("NetworkTask CSRF = ", csrf);
+                Log.d("NetworkTask:doInBackground ","CSRF = " + csrf);
 
 
                 //Login with user & password
@@ -138,13 +142,36 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 wr.close();
 
                 int status = urlConnection.getResponseCode();
-                Log.d("Network ", "status = " + status);
+                Log.d("NetworkTask:doInBackground ", "status = " + status);
 
                 link = "https://www-1.tuenti.com/?m=Accountdashboard&func=index&utm_content=active_subscriber&utm_source=internal&utm_medium=mobile_tab&utm_campaign=cupcake_fixed&ajax=1";
 
+                url = new URL(link);
+                urlConnection = (HttpsURLConnection) url.openConnection();
+                urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
+                urlConnection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                urlConnection.setRequestProperty("Accept-Language", "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3");
+                urlConnection.setRequestProperty("Accept-Encoding", "gzip, deflate");
+                urlConnection.setRequestProperty("Referer", "https://www.tuenti.com/?m=Login");
+                urlConnection.setRequestProperty("Connection", "Keep-alive");
+                urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                in = urlConnection.getInputStream();
+
+                if ("gzip".equals(urlConnection.getContentEncoding())) {
+                    in = new GZIPInputStream(in);
+                }
+
+                isr = new InputStreamReader(in);
+                StringBuffer sb2 = new StringBuffer();
+                while ((read = isr.read(buf)) > 0) {
+                    sb2.append(buf, 0, read);
+                }
+
                 int counter = 0;
-                while (counter != numOfTries) {
-                    counter++;
+                while(counter!=COUNT_LIMIT){
+                    Log.d("NetworkTask:doInBackground ", "Sleeping " + SLEEPING_TIME + " s" );
+                    Thread.sleep(SLEEPING_TIME); //Wait data for being accessible and then request again
+                    Log.d("NetworkTask:doInBackground ", "Time to wake up and ask again!");
                     url = new URL(link);
                     urlConnection = (HttpsURLConnection) url.openConnection();
                     urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
@@ -161,61 +188,77 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     }
 
                     isr = new InputStreamReader(in);
-                    StringBuffer sb2 = new StringBuffer();
+                    sb2 = new StringBuffer();
                     while ((read = isr.read(buf)) > 0) {
                         sb2.append(buf, 0, read);
                     }
                     sreturned = sb2.toString();
 
-                    if (sreturned.contains("tu-dash-balance")) {
-                        Log.d("NetworkTask ", "data found! ;)");
-                        String consumption = "";
-                        Pattern paternConsumption = Pattern.compile("([0-9]+?,[0-9]*)[^,]*\\\\u20ac");
-                        Matcher matcherConsumption = paternConsumption.matcher(sreturned);
-                        if (matcherConsumption.find()) {
-                            consumption = matcherConsumption.group(1);
-                            Log.d("NetworkTask ", consumption + " €");
-                            result[0] = consumption + " €";
-                        }
-
-                        String percentage = "";
-                        Pattern paternPER = Pattern.compile("percentage\\\":(\\d+).?");
-                        Matcher matcherPER = paternPER.matcher(sreturned);
-                        if (matcherPER.find()) {
-                            percentage = matcherPER.group(1);
-                            result[2]=percentage;
-                            Log.d("NetworkTask ", percentage + " %");
-
-                            //percentage found ... It should exists bundle data
-                            Pattern paternMB = Pattern.compile("([0-9]{1,4}+)[^0-9]*>MB ");
-                            Pattern paternGB = Pattern.compile("([0-9]{1,4}+)[^0-9]*>GB ");
-                            Matcher matcherMB = paternMB.matcher(sreturned);
-                            Matcher matcherGB = paternGB.matcher(sreturned);
-                            if (matcherMB.find()) {
-                                String megaBytes = matcherMB.group(1);
-                                if(megaBytes.length()>3) {
-                                    double gigasDouble = (double)Math.round((Double.parseDouble(megaBytes) / 1024) * 100) / 100;
-                                    Log.d("NetworkTask ",  + gigasDouble + " GB");
-                                    result[1] = gigasDouble + " GB";
-                                }else{
-                                    Log.d("NetworkTask ", megaBytes + " MB");
-                                    result[1] = megaBytes + " MB";
-                                }
-                            }else if (matcherGB.find()) {
-                                result[1] = matcherGB.group(1) + " GB";
-                            }else{
-                                //No bundle
-                                result[1]="";
-                            }
-
-                        }
-
+                    if((sreturned.contains("tu-dash-balance")) && !(sreturned.contains("balance-loading")))
                         break;
-                    } else {
-                        Thread.sleep(4000);
-                        Log.d("NetworkTask ", "data still not found. :'(");
-                    }
+                    counter++;
                 }
+
+                if(counter==COUNT_LIMIT) {
+                    Log.d("NetworkTask ", "data not found. :'(");
+                    return result;
+                }
+
+                Log.d("NetworkTask ", "Some data found! :)");
+                String consumption = "";
+                Pattern patternConsumption = Pattern.compile("([0-9]+?,[0-9]*)[^,]*\\\\u20ac");
+                Matcher matcherConsumption = patternConsumption.matcher(sreturned);
+                if (matcherConsumption.find()) {
+                    consumption = matcherConsumption.group(1);
+                    Log.d("NetworkTask ", consumption + " €");
+                    result[0] = consumption + " €";
+                }else{
+                    //No money
+                    File file = new File(context.getDir("data", context.MODE_PRIVATE), "response_nomoney.txt");
+                    PrintWriter out = new PrintWriter(file);
+                    out.println(sreturned);
+                    out.flush();
+                    out.close();
+                    result[1]="";
+                }
+
+                String percentage = "";
+                Pattern patternPER = Pattern.compile("percentage\\\":(\\d+).?");
+                Matcher matcherPER = patternPER.matcher(sreturned);
+                if (matcherPER.find()) {
+                    percentage = matcherPER.group(1);
+                    result[2]=percentage;
+                    Log.d("NetworkTask ", percentage + " %");
+
+                    //percentage found ... It should exists bundle data
+                    Pattern patternMB = Pattern.compile("([0-9]{1,4}+)[^0-9]*>MB ");
+                    Pattern patternGB = Pattern.compile("([0-9]{1,4}+)[^0-9]*>GB ");
+                    Matcher matcherMB = patternMB.matcher(sreturned);
+                    Matcher matcherGB = patternGB.matcher(sreturned);
+                    if (matcherMB.find()) {
+                        String megaBytes = matcherMB.group(1);
+                        if(megaBytes.length()>3) {
+                            double gigasDouble = (double)Math.round((Double.parseDouble(megaBytes) / 1024) * 100) / 100;
+                            Log.d("NetworkTask ",  + gigasDouble + " GB");
+                            result[1] = gigasDouble + " GB";
+                        }else{
+                            Log.d("NetworkTask ", megaBytes + " MB");
+                            result[1] = megaBytes + " MB";
+                        }
+                    }else if (matcherGB.find()) {
+                        result[1] = matcherGB.group(1) + " GB";
+                    }else{
+                        //No bundle
+                        File file = new File(context.getDir("data", context.MODE_PRIVATE), "response_nobono.txt");
+                        PrintWriter out = new PrintWriter(file);
+                        out.println(sreturned);
+                        out.flush();
+                        out.close();
+                        result[1]="";
+                    }
+
+                }
+
             } catch (MalformedURLException e) {
                 Log.e("Network,doInBackground: ","Error MalformedURLException");
                 e.printStackTrace();
@@ -236,28 +279,36 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         dataMap.put(appWidgetId + "_dataNet",result[1]);
         dataMap.put(appWidgetId + "_dataPercentage",result[2]);
         UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap);
+
         return result;
     }
 
     @Override
     protected void onPostExecute(String[] result) {
         if(result != null){
-            Log.d("NetworkTask, onPostExecute ",result[0]+ " - " + result[1]);
+            Log.d("NetworkTask, onPostExecute ","result[0]" + result[0]);
+            Log.d("NetworkTask, onPostExecute ","result[1]" + result[1]);
+            Log.d("NetworkTask, onPostExecute ","result[2]" + result[2]);
+
             remoteViews.setTextViewText(R.id.dataMoney, result[0]);
-            if(result[1]!="") {
+            if(result[1]!="" && result[1]!=null) {
                 remoteViews.setTextViewText(R.id.dataNet, result[1]);
             }else{
                 remoteViews.setTextViewText(R.id.dataNet, context.getString(R.string.nobundle));
             }
 
-            if(result[2]!=""){
-                Log.d("Network, onPostExecute ", "percentage = " + result[2]);
+            int bgId = 0;
+            if(result[2]!="" && result[2]!=null){
+                bgId = context.getResources().getIdentifier("tuenti_widget_"+result[2]+"_annulus",
+                        "drawable",
+                        context.getPackageName());
 
-                int bgId = context.getResources().getIdentifier("tuenti_widget_"+result[2]+"_annulus",
-                                                              "drawable",
-                                                              context.getPackageName());
-                remoteViews.setImageViewResource(R.id.annulus,bgId);
+            }else{
+                bgId = context.getResources().getIdentifier("tuenti_widget_100_annulus",
+                        "drawable",
+                        context.getPackageName());
             }
+            remoteViews.setImageViewResource(R.id.annulus,bgId);
             // Instruct the widget manager to update the widget
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 

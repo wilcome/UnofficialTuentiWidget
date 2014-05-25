@@ -74,6 +74,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
 
         Log.d("UnofficialTuentiWidgetConfigureActivity:onCreate ", "mAppWidgetId = " + mAppWidgetId);
         tuUserText.setText("user@email.com");
+
         tuPasswordText.setText("password");
         tuPasswordText.requestFocus();
     }
@@ -82,14 +83,14 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         public void onClick(View v) {
             final Context context = UnofficialTuentiWidgetConfigureActivity.this;
             Log.d("UnofficialTuentiWidgetConfigureActivity:mOnClickListener ", "begin");
+            Log.d("UnofficialTuentiWidgetConfigureActivity:mOnClickListener ","mAppWidgetId = " + mAppWidgetId);
 
             // When the button is clicked, store the string locally
             String widgetTuUserText = tuUserText.getText().toString();
             String widgetTuPasswordText = tuPasswordText.getText().toString();
 
-            HashMap<String,String> dataMap = new HashMap<String, String>();
-            Log.d("UnofficialTuentiWidgetConfigureActivity:mOnClickListener ","mAppWidgetId = " + mAppWidgetId);
-            Log.d("UnofficialTuentiWidgetConfigureActivity:mOnClickListener ","mAppWidgetId = " + mAppWidgetId);
+            HashMap<String, String> dataMap = UnofficialTuentiWidgetConfigureActivity.loadData(context, mAppWidgetId);
+
             dataMap.put(mAppWidgetId + "_user",widgetTuUserText);
             dataMap.put(mAppWidgetId + "_password",widgetTuPasswordText);
             dataMap.put(mAppWidgetId + "_dataMoney","0 €");
@@ -155,6 +156,10 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     static void saveData(Context context, HashMap<String, String> dataMap) {
         Log.d("UnofficialTuentiWidgetConfigureActivity:saveData ", "begin");
         File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
+        /*for (HashMap.Entry<String, String> entry : dataMap.entrySet())
+        {
+            Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
+        }*/
         try {
             ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
             outputStream.writeObject(dataMap);
