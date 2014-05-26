@@ -11,13 +11,14 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -198,35 +199,34 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     }
                     sreturned = sb2.toString();
 
+                    //StoreResponse(sreturned, counter);
+
                     if((sreturned.contains("tu-dash-balance")) && !(sreturned.contains("balance-loading")))
                         break;
                     counter++;
                 }
 
                 if(counter==COUNT_LIMIT) {
-                    Log.d("NetworkTask ", "data not found. :'(");
+                    Log.d("NetworkTask:doInBackground ", "data not found. :'(");
                     return result;
                 }
 
-                Log.d("NetworkTask ", "Some data found! :)");
+                Log.d("NetworkTask:doInBackground ", "Some data found! :)");
                 String consumption = "";
-                Pattern patternConsumption = Pattern.compile("([0-9]+?,[0-9]*)[^,]*\\\\u20ac");
+                Pattern patternConsumption = Pattern.compile("([0-9]++)[^,0-9]*\\\\u20ac|([0-9]+?,[0-9]*)[^,]*\\\\u20ac");
                 Matcher matcherConsumption = patternConsumption.matcher(sreturned);
                 if (matcherConsumption.find()) {
-                    consumption = matcherConsumption.group(1);
+                    Log.d("NetworkTask:doInBackground ", "group1 = " + matcherConsumption.group(1));
+                    Log.d("NetworkTask:doInBackground ", "group2 = " + matcherConsumption.group(2));
+                    consumption = matcherConsumption.group(1) != null ? matcherConsumption.group(1):matcherConsumption.group(2);
                     consumption = consumption.replace(',','.');
                         double consumptionDouble = (double) Math.round((Double.parseDouble(consumption) +
                                                                         Double.parseDouble(dataBundlePrice))*100)/100;
-                    Log.d("NetworkTask ", consumptionDouble + " €");
+                    Log.d("NetworkTask:doInBackground ", consumptionDouble + " €");
                     result[0] = consumptionDouble + " €";
                 }else{
                     //No money
-                    File file = new File(context.getDir("data", context.MODE_PRIVATE), "response_nomoney.txt");
-                    PrintWriter out = new PrintWriter(file);
-                    out.println(sreturned);
-                    out.flush();
-                    out.close();
-                    result[1]="";
+                    result[0]="";
                 }
 
                 String percentage = "";
@@ -251,11 +251,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         result[1] = matcherMB.group(1) + " MB";
                     }else{
                         //No bundle
-                        File file = new File(context.getDir("data", context.MODE_PRIVATE), "response_nobono.txt");
-                        PrintWriter out = new PrintWriter(file);
-                        out.println(sreturned);
-                        out.flush();
-                        out.close();
                         result[1]="";
                     }
 
@@ -331,5 +326,35 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         }else{
             Log.d("NetworkTask, onPostExecute ","Text empty");
         }
+    }
+
+    public void StoreResponse(String response, int counter){
+        String finalString = "";
+        StringBuffer fileData = new StringBuffer();
+        File file = new File(context.getDir("data", context.MODE_PRIVATE), "responses.txt");
+        BufferedReader reader = null;
+        try {
+            if(file.exists()) {
+                reader = new BufferedReader(new FileReader(file));
+                char[] buf = new char[1024];
+                int numRead = 0;
+                while ((numRead = reader.read(buf)) != -1) {
+                    String readData = String.valueOf(buf, 0, numRead);
+                    fileData.append(readData);
+                }
+                reader.close();
+            }
+            finalString = fileData.toString() + "\n\ncounter ----> " + counter + "\n\n" +  response;
+
+            file = new File(context.getDir("data", context.MODE_PRIVATE), "responses.txt");
+            PrintWriter out = new PrintWriter(file);
+            out.println(finalString);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 }
