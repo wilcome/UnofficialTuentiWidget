@@ -4,8 +4,10 @@ package com.whatafabric.unofficialtuentiwidget;
  * Created by Enrique García Orive on 22/05/14.
  */
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -65,12 +67,14 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         String dataMoney = dataMap.get(appWidgetId + "_dataMoney");
         String dataNet = dataMap.get(appWidgetId + "_dataNet");
         String dataPercentage = dataMap.get(appWidgetId + "_dataPercentage");
+        String dataBundlePrice = dataMap.get(appWidgetId + "_dataBundlePrice");
 
         //Log.d("NetworkTask ", "user = " + user);
         //Log.d("NetworkTask ", "password = " + password);
         Log.d("NetworkTask:doInBackground ", "OLD dataMoney = " + dataMoney);
         Log.d("NetworkTask:doInBackground ", "OLD dataNet = " + dataNet);
         Log.d("NetworkTask:doInBackground ", "OLD dataPercentage = " + dataPercentage);
+        Log.d("NetworkTask:doInBackground ", "OLD dataBundlePrice = " + dataBundlePrice);
 
         String result[] = {"","",""};
 
@@ -210,8 +214,11 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 Matcher matcherConsumption = patternConsumption.matcher(sreturned);
                 if (matcherConsumption.find()) {
                     consumption = matcherConsumption.group(1);
-                    Log.d("NetworkTask ", consumption + " €");
-                    result[0] = consumption + " €";
+                    consumption = consumption.replace(',','.');
+                        double consumptionDouble = (double) Math.round(Double.parseDouble(consumption) +
+                                                                       Double.parseDouble(dataBundlePrice));
+                    Log.d("NetworkTask ", consumptionDouble + " €");
+                    result[0] = consumptionDouble + " €";
                 }else{
                     //No money
                     File file = new File(context.getDir("data", context.MODE_PRIVATE), "response_nomoney.txt");
@@ -304,6 +311,20 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         context.getPackageName());
             }
             remoteViews.setImageViewResource(R.id.annulus,bgId);
+
+            //Create another intent for the case in which we push the widget
+            Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
+            intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
+            intentForceUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            PendingIntent pendingIntentForceUpdate = PendingIntent.getBroadcast(context,
+                    appWidgetId,
+                    intentForceUpdate,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            remoteViews.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
+            remoteViews.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
+
+
             // Instruct the widget manager to update the widget
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 

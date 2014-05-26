@@ -24,8 +24,8 @@ import java.util.HashMap;
  */
 public class UnofficialTuentiWidget extends AppWidgetProvider {
 
-    public static final String UPDATE = "com.whatafabric.unofficialtuentiwidget.UPDATE_WIDGET";
-    public static final String FORCE_UPDATE = "com.whatafabric.unofficialtuentiwidget.FORCE_UPDATE_WIDGET";
+    public static final String UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.UPDATE_WIDGET";
+    public static final String FORCE_UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.FORCE_UPDATE_WIDGET";
     public Context context;
     private static HashMap<Integer, Uri> uris = new HashMap<Integer, Uri>();
 
@@ -73,7 +73,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         String action = intent.getAction();
         Log.d("UnofficialTuentiWidget:onReceive", "action: " + action);
         if(action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE) ||
-                action.equals(UPDATE) || action.equals(FORCE_UPDATE))
+                action.equals(UPDATE_WIDGET) || action.equals(FORCE_UPDATE_WIDGET))
         {
             //Check if there is a single widget ID.
             int widgetID = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
@@ -83,10 +83,10 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
             if(widgetID == AppWidgetManager.INVALID_APPWIDGET_ID) {
                 super.onReceive(context, intent);
                 //Otherwise call our onUpdate() passing a one element array, with the retrieved ID.
-            }else if (action.equals(FORCE_UPDATE)) {
+            }else if (action.equals(FORCE_UPDATE_WIDGET)) {
                 Log.d("UnofficialTuentiWidget:onReceive", "force update");
                 this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
-            }else if(action.equals(UPDATE)){
+            }else if(action.equals(UPDATE_WIDGET)){
                 Log.d("UnofficialTuentiWidget:onReceive", "kernel update");
                 this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
             }else if(action.equals(AppWidgetManager.EXTRA_APPWIDGET_ID)){
@@ -98,8 +98,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
             super.onReceive(context, intent);
     }
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
-                                int appWidgetId) {
+    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,int appWidgetId) {
         Log.d("UnofficialTuentiWidget:updateAppWidget ","begin");
         HashMap<String, String> dataMap = UnofficialTuentiWidgetConfigureActivity.loadData(context, appWidgetId);
         // Construct the RemoteViews object
@@ -119,7 +118,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intentUpdate = new Intent(context, UnofficialTuentiWidget.class);
         //AlarmManager are identified with Intent's Action and Uri.
-        intentUpdate.setAction(UPDATE);
+        intentUpdate.setAction(UPDATE_WIDGET);
         //For a global AlarmManager, don't put the uri to cancel
         //all the AlarmManager with action UPDATE_ONE.
         intentUpdate.setData(uris.get(widgetID));
@@ -131,7 +130,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
 
         alarm.cancel(pendingIntentAlarm);
         Log.d("cancelAlarmManager", "Cancelled Alarm. Action = " +
-                UnofficialTuentiWidget.UPDATE +
+                UnofficialTuentiWidget.UPDATE_WIDGET +
                 " URI = " + uris.get(widgetID));
         uris.remove(widgetID);
     }

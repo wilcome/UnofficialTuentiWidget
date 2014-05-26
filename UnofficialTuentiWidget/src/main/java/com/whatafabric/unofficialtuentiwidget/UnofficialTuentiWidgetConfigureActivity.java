@@ -15,17 +15,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
 import java.util.HashMap;
 
 
@@ -37,6 +34,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     EditText tuUserText;
     EditText tuPasswordText;
+    EditText tuBundlePriceText;
     private int seconds = 3600;
     protected static final String FILENAME = "UnoficialTuentiData";
 
@@ -56,14 +54,14 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         setContentView(R.layout.unofficial_tuenti_widget_configure);
         tuUserText = (EditText)findViewById(R.id.tu_user);
         tuPasswordText = (EditText)findViewById(R.id.tu_password);
+        tuBundlePriceText = (EditText)findViewById(R.id.tu_bundlePrice);
         findViewById(R.id.create_tuentiwidget).setOnClickListener(mOnClickListener);
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null) {
-            mAppWidgetId = extras.getInt(
-                    AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+            mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
         // If this activity was started with an intent without an app widget ID, finish with an error.
@@ -74,9 +72,11 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
 
         Log.d("UnofficialTuentiWidgetConfigureActivity:onCreate ", "mAppWidgetId = " + mAppWidgetId);
         tuUserText.setText("user@email.com");
-
         tuPasswordText.setText("password");
+        tuBundlePriceText.setText("0");
         tuPasswordText.requestFocus();
+
+
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -88,6 +88,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             // When the button is clicked, store the string locally
             String widgetTuUserText = tuUserText.getText().toString();
             String widgetTuPasswordText = tuPasswordText.getText().toString();
+            String widgetTuBundlePriceText = tuBundlePriceText.getText().toString();
 
             HashMap<String, String> dataMap = UnofficialTuentiWidgetConfigureActivity.loadData(context, mAppWidgetId);
 
@@ -96,6 +97,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             dataMap.put(mAppWidgetId + "_dataMoney","0 €");
             dataMap.put(mAppWidgetId + "_dataNet","");
             dataMap.put(mAppWidgetId + "_dataPercentage","100");
+            dataMap.put(mAppWidgetId + "_dataBundlePrice",widgetTuBundlePriceText);
             saveData(context, dataMap);
 
 
@@ -113,7 +115,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             build.appendPath(""+mAppWidgetId);
             Uri uri = build.build();
             Intent intentUpdate = new Intent(context, UnofficialTuentiWidget.class);
-            intentUpdate.setAction(UnofficialTuentiWidget.UPDATE);//Set an action anyway to filter it in onReceive()
+            intentUpdate.setAction(UnofficialTuentiWidget.UPDATE_WIDGET);//Set an action anyway to filter it in onReceive()
             intentUpdate.setData(uri);//One Alarm per instance.
             //We will need the exact instance to identify the intent.
             UnofficialTuentiWidget.addUri(mAppWidgetId, uri);
@@ -129,13 +131,13 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                     System.currentTimeMillis()+(seconds*1000),
                     (seconds*1000),
                     pendingIntentAlarm);
-            Log.d("Ok Button", "Created Alarm. Action = " + UnofficialTuentiWidget.UPDATE +
+            Log.d("Ok Button", "Created Alarm. Action = " + UnofficialTuentiWidget.UPDATE_WIDGET +
                     " URI = " + build.build().toString() +
                     " Seconds = " + seconds);
 
             //Create another intent for the case in which we push the widget
             Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
-            intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE);
+            intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
             intentForceUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             PendingIntent pendingIntentForceUpdate = PendingIntent.getBroadcast(context,
                     mAppWidgetId,
@@ -156,10 +158,11 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     static void saveData(Context context, HashMap<String, String> dataMap) {
         Log.d("UnofficialTuentiWidgetConfigureActivity:saveData ", "begin");
         File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
-        /*for (HashMap.Entry<String, String> entry : dataMap.entrySet())
+        for (HashMap.Entry<String, String> entry : dataMap.entrySet())
         {
-            Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
-        }*/
+            if(!entry.getKey().contains("password"))
+                Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
+        }
         try {
             ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
             outputStream.writeObject(dataMap);
@@ -183,10 +186,11 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                 ObjectInputStream ois = new ObjectInputStream(fis);
 
                 dataMap = (HashMap<String, String>) ois.readObject();
-                /*for (HashMap.Entry<String, String> entry : dataMap.entrySet())
+                for (HashMap.Entry<String, String> entry : dataMap.entrySet())
                 {
-                    Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
-                }*/
+                    if(!entry.getKey().contains("password"))
+                        Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
+                }
             }else{
                 Log.d("UnofficialTuentiWidgetConfigureActivity:onCreate ","file doesn't exists.");
                 dataMap.put(appWidgetId+"_user","user");
@@ -194,6 +198,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                 dataMap.put(appWidgetId+"_dataMoney","0 €");
                 dataMap.put(appWidgetId+"_dataNet","0 MB");
                 dataMap.put(appWidgetId+"_dataPercentage","0");
+                dataMap.put(appWidgetId+"_dataBundlePrice","0");
 
                 ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
                 outputStream.writeObject(dataMap);
