@@ -13,5 +13,6 @@
     <string name="create_widget">Crear widget</string>
     <string name="data_not_found">Info\nno\nencontrada</string>
     <string name="nobundle">!Bono</string>
+    <string name="add_bundle_price_cb">Precio del bono mensual: </string>
 
 </resources>

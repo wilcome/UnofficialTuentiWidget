@@ -13,5 +13,6 @@
     <string name="create_widget">Create widget</string>
     <string name="data_not_found">Data\nnot\nfound</string>
     <string name="nobundle">!Bundle</string>
+    <string name="add_bundle_price_cb">Monthly bundle price: </string>
 
 </resources>
