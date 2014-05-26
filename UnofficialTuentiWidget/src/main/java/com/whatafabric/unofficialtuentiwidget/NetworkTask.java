@@ -215,8 +215,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 if (matcherConsumption.find()) {
                     consumption = matcherConsumption.group(1);
                     consumption = consumption.replace(',','.');
-                        double consumptionDouble = (double) Math.round(Double.parseDouble(consumption) +
-                                                                       Double.parseDouble(dataBundlePrice));
+                        double consumptionDouble = (double) Math.round((Double.parseDouble(consumption) +
+                                                                        Double.parseDouble(dataBundlePrice))*100)/100;
                     Log.d("NetworkTask ", consumptionDouble + " €");
                     result[0] = consumptionDouble + " €";
                 }else{
