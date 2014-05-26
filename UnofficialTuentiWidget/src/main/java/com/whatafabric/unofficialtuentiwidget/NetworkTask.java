@@ -231,22 +231,17 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     Log.d("NetworkTask ", percentage + " %");
 
                     //percentage found ... It should exists bundle data
-                    Pattern patternMB = Pattern.compile("([0-9]{1,4}+)[^0-9]*>MB ");
-                    Pattern patternGB = Pattern.compile("([0-9]{1,4}+)[^0-9]*>GB ");
+                    Pattern patternMB = Pattern.compile("([0-9]{1,3}+)[^0-9]*>MB ");
+                    Pattern patternGB = Pattern.compile("([0-9]{1,2}+)\\.([0-9]{3}+)[^0-9]*>MB ");
                     Matcher matcherMB = patternMB.matcher(sreturned);
                     Matcher matcherGB = patternGB.matcher(sreturned);
-                    if (matcherMB.find()) {
-                        String megaBytes = matcherMB.group(1);
-                        if(megaBytes.length()>3) {
-                            double gigasDouble = (double)Math.round((Double.parseDouble(megaBytes) / 1024) * 100) / 100;
-                            Log.d("NetworkTask ",  + gigasDouble + " GB");
-                            result[1] = gigasDouble + " GB";
-                        }else{
-                            Log.d("NetworkTask ", megaBytes + " MB");
-                            result[1] = megaBytes + " MB";
-                        }
-                    }else if (matcherGB.find()) {
-                        result[1] = matcherGB.group(1) + " GB";
+                     if (matcherGB.find()) {
+                        String megaBytes = matcherGB.group(1)+matcherGB.group(2);
+                        double gigasDouble = (double)Math.round((Double.parseDouble(megaBytes) / 1024) * 100) / 100;
+                        Log.d("NetworkTask ",  + gigasDouble + " GB");
+                        result[1] = gigasDouble + " GB";
+                    }else if (matcherMB.find()) {
+                        result[1] = matcherMB.group(1) + " MB";
                     }else{
                         //No bundle
                         File file = new File(context.getDir("data", context.MODE_PRIVATE), "response_nobono.txt");
