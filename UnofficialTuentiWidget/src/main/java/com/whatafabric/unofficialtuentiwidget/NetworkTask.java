@@ -108,21 +108,21 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 }
                 sreturned = sb.toString();
 
+
                 //Obtain CSRF from body
                 String csrf = "";
-                int csrfStartIndex = -1;
-                if (sreturned.indexOf("csrf") != 1) {
-                    csrfStartIndex = sreturned.indexOf("csrf") + 13;
-                } else if (sreturned.indexOf("csfr") != 1) {
-                    csrfStartIndex = sreturned.indexOf("csfr") + 13;
-                } else {
-                    Log.d("NetworkTask:doInBackground ","CSRF NOT found");
-                    return result;
-                }
-                int csrfEndIndex = sreturned.indexOf("\"", csrfStartIndex);
-                csrf = sreturned.substring(csrfStartIndex, csrfEndIndex);
-                Log.d("NetworkTask:doInBackground ","CSRF = " + csrf);
+                Pattern pcsrf = Pattern.compile("\"csrf\"*+[^\"]*+\"([^\"]+)\"|\"csfr\"*+[^\"]*+\"([^\"]+)\"");
+                Matcher mcsrf = pcsrf.matcher(sreturned);
 
+                if(mcsrf.find()){
+                    if(mcsrf.group(1) != null) {
+                        csrf = mcsrf.group(1);
+                    }else{
+                        csrf = mcsrf.group(2);
+                    }
+                }
+
+                Log.d("NetworkTask:doInBackground ","CSRF = " + csrf);
 
                 //Login with user & password
                 link = "https://secure.tuenti.com/?m=Login&func=do_login";
