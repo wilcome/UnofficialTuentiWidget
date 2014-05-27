@@ -34,7 +34,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
 
-    private static int SLEEPING_TIME = 5000; //in miliseconds
+    private static int SLEEPING_TIME = 1000; //in miliseconds
     private static int COUNT_LIMIT = 5; //in miliseconds
 
     private Context context;
@@ -173,9 +173,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 }
 
                 int counter = 0;
+                int sleepingTime = SLEEPING_TIME;
                 while(counter!=COUNT_LIMIT){
                     Log.d("NetworkTask:doInBackground ", "Sleeping " + SLEEPING_TIME + " s" );
-                    Thread.sleep(SLEEPING_TIME); //Wait data for being accessible and then request again
+                    Thread.sleep(sleepingTime); //Wait data for being accessible and then request again
                     Log.d("NetworkTask:doInBackground ", "Time to wake up and ask again!");
                     url = new URL(link);
                     urlConnection = (HttpsURLConnection) url.openConnection();
@@ -199,13 +200,13 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     }
                     sreturned = sb2.toString();
 
-                    StoreResponse(sreturned, counter);
+                    //StoreResponse(sreturned, counter);
 
                     if((sreturned.contains("tu-dash-balance")) &&
-                      !(sreturned.contains("balance-loading")) &&
-                      !(sreturned.contains("tu-dash-pending-animation")))
+                            !(sreturned.contains(context.getResources().getString(R.string.loading) )))
                         break;
                     counter++;
+                    sleepingTime += sleepingTime;
                 }
 
                 if(counter==COUNT_LIMIT) {
@@ -215,21 +216,38 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
                 Log.d("NetworkTask:doInBackground ", "Some data found! :)");
                 String consumption = "";
-                Pattern patternConsumption = Pattern.compile("([0-9]++)[^,0-9]*\\\\u20ac|([0-9]+?,[0-9]*)[^,]*\\\\u20ac");
-                Matcher matcherConsumption = patternConsumption.matcher(sreturned);
-                if (matcherConsumption.find()) {
-                    Log.d("NetworkTask:doInBackground ", "group1 = " + matcherConsumption.group(1));
-                    Log.d("NetworkTask:doInBackground ", "group2 = " + matcherConsumption.group(2));
-                    consumption = matcherConsumption.group(1) != null ? matcherConsumption.group(1):matcherConsumption.group(2);
-                    consumption = consumption.replace(',','.');
-                        double consumptionDouble = (double) Math.round((Double.parseDouble(consumption) +
-                                                                        Double.parseDouble(dataBundlePrice))*100)/100;
-                    Log.d("NetworkTask:doInBackground ", consumptionDouble + " €");
-                    result[0] = consumptionDouble + " €";
+                Pattern pc1 = Pattern.compile("\\\\u20ac\\\\u00a0([0-9]+?\\.[0-9]*)");//Cases:  €0.15
+                Matcher mc1 = pc1.matcher(sreturned);
+                Pattern pc2 = Pattern.compile("\\\\u20ac\\\\u00a0([0-9]+?)");//Cases:  €0 or  €4
+                Matcher mc2 = pc2.matcher(sreturned);
+                Pattern pc3 = Pattern.compile("([0-9]+?,[0-9]*)[^,]*\\\\u20ac");//Cases:  0,15€
+                Matcher mc3 = pc3.matcher(sreturned);
+                Pattern pc4 = Pattern.compile("([0-9]++)[^,0-9]*\\\\u20ac");//Cases:  0€ or 4€
+                Matcher mc4 = pc4.matcher(sreturned);
+
+                if (mc1.find()){
+                    Log.d("NetworkTask:doInBackground ", "group1 = " + mc1.group(1));
+                    consumption = mc1.group(1);
+                }else if (mc2.find()){
+                    Log.d("NetworkTask:doInBackground ", "group2 = " + mc2.group(1));
+                    consumption = mc2.group(1);
+                }else if (mc3.find()){
+                    Log.d("NetworkTask:doInBackground ", "group3 = " + mc3.group(1));
+                    consumption = mc3.group(1);
+                }else if (mc4.find()) {
+                    Log.d("NetworkTask:doInBackground ", "group4 = " + mc4.group(1));
+                    consumption = mc4.group(1);
                 }else{
                     //No money
-                    result[0]="";
+                    result[0]="badAccount";
                 }
+
+                consumption = consumption.replace(',','.');
+                double consumptionDouble = (double) Math.round((Double.parseDouble(consumption) +
+                        Double.parseDouble(dataBundlePrice))*100)/100;
+                Log.d("NetworkTask:doInBackground ", consumptionDouble + " €");
+                result[0] = consumptionDouble + " €";
+
 
                 String percentage = "";
                 Pattern patternPER = Pattern.compile("percentage\\\":(\\d+).?");
@@ -244,7 +262,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     Pattern patternGB = Pattern.compile("([0-9]{1,2}+)\\.([0-9]{3}+)[^0-9]*>MB ");
                     Matcher matcherMB = patternMB.matcher(sreturned);
                     Matcher matcherGB = patternGB.matcher(sreturned);
-                     if (matcherGB.find()) {
+                    if (matcherGB.find()) {
                         String megaBytes = matcherGB.group(1)+matcherGB.group(2);
                         double gigasDouble = (double)Math.round((Double.parseDouble(megaBytes) / 1024) * 100) / 100;
                         Log.d("NetworkTask ",  + gigasDouble + " GB");

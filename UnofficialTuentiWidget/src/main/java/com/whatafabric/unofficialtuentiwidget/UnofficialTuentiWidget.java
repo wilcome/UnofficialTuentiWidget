@@ -78,7 +78,6 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
             //Check if there is a single widget ID.
             int widgetID = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
-            Log.d("UnofficialTuentiWidget:onReceive","WIDGETID -*-*-*-*-*-*-> "+widgetID);
             //If there is no single ID, call the super implementation.
             if(widgetID == AppWidgetManager.INVALID_APPWIDGET_ID) {
                 super.onReceive(context, intent);
