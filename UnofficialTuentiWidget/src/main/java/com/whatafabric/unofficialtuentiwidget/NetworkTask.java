@@ -199,9 +199,11 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     }
                     sreturned = sb2.toString();
 
-                    //StoreResponse(sreturned, counter);
+                    StoreResponse(sreturned, counter);
 
-                    if((sreturned.contains("tu-dash-balance")) && !(sreturned.contains("balance-loading")))
+                    if((sreturned.contains("tu-dash-balance")) &&
+                      !(sreturned.contains("balance-loading")) &&
+                      !(sreturned.contains("tu-dash-pending-animation")))
                         break;
                     counter++;
                 }
