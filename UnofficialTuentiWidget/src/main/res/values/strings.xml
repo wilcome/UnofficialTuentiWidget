@@ -14,5 +14,6 @@
     <string name="data_not_found">Data\nnot\nfound</string>
     <string name="nobundle">!Bundle</string>
     <string name="add_bundle_price_cb">Monthly bundle price: </string>
+    <string name="loading">oading billing info...</string>
 
 </resources>

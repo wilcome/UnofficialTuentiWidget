@@ -15,4 +15,8 @@
     <string name="nobundle">!Bono</string>
     <string name="add_bundle_price_cb">Precio del bono mensual: </string>
 
+    <string name="loading">argando...</string>
+
+
+
 </resources>
