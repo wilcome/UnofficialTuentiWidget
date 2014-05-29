@@ -69,6 +69,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         String dataNet = dataMap.get(appWidgetId + "_dataNet");
         String dataPercentage = dataMap.get(appWidgetId + "_dataPercentage");
         String dataBundlePrice = dataMap.get(appWidgetId + "_dataBundlePrice");
+        String dataVAT = dataMap.get(appWidgetId + "_dataVAT");
 
         //Log.d("NetworkTask ", "user = " + user);
         //Log.d("NetworkTask ", "password = " + password);
@@ -76,6 +77,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         Log.d("NetworkTask:doInBackground ", "OLD dataNet = " + dataNet);
         Log.d("NetworkTask:doInBackground ", "OLD dataPercentage = " + dataPercentage);
         Log.d("NetworkTask:doInBackground ", "OLD dataBundlePrice = " + dataBundlePrice);
+        Log.d("NetworkTask:doInBackground ", "OLD dataVAT = " + dataVAT);
 
         String result[] = {"","",""};
 
@@ -175,7 +177,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 int counter = 0;
                 int sleepingTime = SLEEPING_TIME;
                 while(counter!=COUNT_LIMIT){
-                    Log.d("NetworkTask:doInBackground ", "Sleeping " + SLEEPING_TIME + " s" );
+                    Log.d("NetworkTask:doInBackground ", "Sleeping " + sleepingTime + " s" );
                     Thread.sleep(sleepingTime); //Wait data for being accessible and then request again
                     Log.d("NetworkTask:doInBackground ", "Time to wake up and ask again!");
                     url = new URL(link);
@@ -243,8 +245,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 }
 
                 consumption = consumption.replace(',','.');
-                double consumptionDouble = (double) Math.round((Double.parseDouble(consumption) +
-                        Double.parseDouble(dataBundlePrice))*100)/100;
+                double consumptionDouble = (double) Math.round(((Double.parseDouble(consumption) *
+                                                               (1 + Double.parseDouble(dataVAT))) +
+                                                                Double.parseDouble(dataBundlePrice))*100)/100;
                 Log.d("NetworkTask:doInBackground ", consumptionDouble + " €");
                 result[0] = consumptionDouble + " €";
 

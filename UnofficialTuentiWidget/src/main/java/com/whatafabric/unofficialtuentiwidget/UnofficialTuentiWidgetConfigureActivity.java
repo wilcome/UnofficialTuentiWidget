@@ -35,6 +35,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     EditText tuUserText;
     EditText tuPasswordText;
     EditText tuBundlePriceText;
+    EditText tuVATText;
     private int seconds = 3600;
     protected static final String FILENAME = "UnoficialTuentiData";
 
@@ -55,6 +56,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         tuUserText = (EditText)findViewById(R.id.tu_user);
         tuPasswordText = (EditText)findViewById(R.id.tu_password);
         tuBundlePriceText = (EditText)findViewById(R.id.tu_bundlePrice);
+        tuVATText = (EditText)findViewById(R.id.tu_vat);
         findViewById(R.id.create_tuentiwidget).setOnClickListener(mOnClickListener);
 
         // Find the widget id from the intent.
@@ -74,6 +76,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         tuUserText.setText("user@email.com");
         tuPasswordText.setText("password");
         tuBundlePriceText.setText("0");
+        tuVATText.setText("0.21");
         tuPasswordText.requestFocus();
 
 
@@ -89,6 +92,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             String widgetTuUserText = tuUserText.getText().toString();
             String widgetTuPasswordText = tuPasswordText.getText().toString();
             String widgetTuBundlePriceText = tuBundlePriceText.getText().toString();
+            String widgetTuVATText = tuVATText.getText().toString();
 
             HashMap<String, String> dataMap = UnofficialTuentiWidgetConfigureActivity.loadData(context, mAppWidgetId);
 
@@ -98,6 +102,8 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             dataMap.put(mAppWidgetId + "_dataNet","");
             dataMap.put(mAppWidgetId + "_dataPercentage","100");
             dataMap.put(mAppWidgetId + "_dataBundlePrice",widgetTuBundlePriceText);
+            dataMap.put(mAppWidgetId + "_dataVAT",widgetTuVATText);
+
             saveData(context, dataMap);
 
 
@@ -199,6 +205,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                 dataMap.put(appWidgetId+"_dataNet","0 MB");
                 dataMap.put(appWidgetId+"_dataPercentage","0");
                 dataMap.put(appWidgetId+"_dataBundlePrice","0");
+                dataMap.put(appWidgetId+"_dataVAT","0.21");
 
                 ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
                 outputStream.writeObject(dataMap);
