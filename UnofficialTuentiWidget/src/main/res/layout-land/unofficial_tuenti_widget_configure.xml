@@ -71,10 +71,10 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/add_bundle_price_cb"
-                    android:id="@+id/textView" />
+                    android:text="@string/add_bundle_price_cb"/>
 
                 <EditText
                     android:id="@+id/tu_bundlePrice"
@@ -85,6 +85,28 @@
                     android:selectAllOnFocus="true"/>
 
 
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:id="@+id/linearLayout">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vat"/>
+
+                <EditText
+                    android:id="@+id/tu_vat"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:inputType="numberDecimal"
+                    android:selectAllOnFocus="true"/>
             </LinearLayout>
 
             <Button
