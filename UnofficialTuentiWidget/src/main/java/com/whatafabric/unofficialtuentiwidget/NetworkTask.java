@@ -12,6 +12,7 @@ import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.apache.http.Header;
@@ -76,6 +77,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         this.appWidgetManager = appWidgetManager;
         this.appWidgetId = appWidgetId;
         this.context = context;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        Log.d("NetworkTask, onPreExecute","Start");
+        remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
     }
 
     @Override
@@ -431,53 +438,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         }
     }
 
-    @Override
-    protected void onPostExecute(String[] result) {
-        if(result != null){
-            Log.d("NetworkTask, onPostExecute ","result[0]" + result[0]);
-            Log.d("NetworkTask, onPostExecute ","result[1]" + result[1]);
-            Log.d("NetworkTask, onPostExecute ","result[2]" + result[2]);
-
-            remoteViews.setTextViewText(R.id.dataMoney, result[0]);
-            if(result[1]!="" && result[1]!=null) {
-                remoteViews.setTextViewText(R.id.dataNet, result[1]);
-            }else{
-                remoteViews.setTextViewText(R.id.dataNet, context.getString(R.string.nobundle));
-            }
-
-            int bgId = 0;
-            if(result[2]!="" && result[2]!=null){
-                bgId = context.getResources().getIdentifier("tuenti_widget_"+result[2]+"_annulus",
-                        "drawable",
-                        context.getPackageName());
-
-            }else{
-                bgId = context.getResources().getIdentifier("tuenti_widget_100_annulus",
-                        "drawable",
-                        context.getPackageName());
-            }
-            remoteViews.setImageViewResource(R.id.annulus,bgId);
-
-            //Create another intent for the case in which we push the widget
-            Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
-            intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
-            intentForceUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            PendingIntent pendingIntentForceUpdate = PendingIntent.getBroadcast(context,
-                    appWidgetId,
-                    intentForceUpdate,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-
-            remoteViews.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
-            remoteViews.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
-
-
-            // Instruct the widget manager to update the widget
-            appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
-
-        }else{
-            Log.d("NetworkTask, onPostExecute ","Text empty");
-        }
-    }
 
     public void StoreResponse(String response, int counter){
         String finalString = "";
@@ -599,4 +559,58 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         return sb.toString();
     }
 
+
+    @Override
+    protected void onPostExecute(String[] result) {
+
+        remoteViews.setViewVisibility(R.id.progressBar, View.GONE
+
+        );
+        if(result != null){
+            Log.d("NetworkTask, onPostExecute ","result[0]" + result[0]);
+            Log.d("NetworkTask, onPostExecute ","result[1]" + result[1]);
+            Log.d("NetworkTask, onPostExecute ","result[2]" + result[2]);
+
+            remoteViews.setTextViewText(R.id.dataMoney, result[0]);
+            if(result[1]!="" && result[1]!=null) {
+                remoteViews.setTextViewText(R.id.dataNet, result[1]);
+            }else{
+                remoteViews.setTextViewText(R.id.dataNet, context.getString(R.string.nobundle));
+            }
+
+            int bgId = 0;
+            if(result[2]!="" && result[2]!=null){
+                bgId = context.getResources().getIdentifier("tuenti_widget_"+result[2]+"_annulus",
+                        "drawable",
+                        context.getPackageName());
+
+            }else{
+                bgId = context.getResources().getIdentifier("tuenti_widget_100_annulus",
+                        "drawable",
+                        context.getPackageName());
+            }
+            remoteViews.setImageViewResource(R.id.annulus,bgId);
+
+            //Create another intent for the case in which we push the widget
+            Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
+            intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
+            intentForceUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            PendingIntent pendingIntentForceUpdate = PendingIntent.getBroadcast(context,
+                    appWidgetId,
+                    intentForceUpdate,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            remoteViews.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
+            remoteViews.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
+
+
+            // Instruct the widget manager to update the widget
+            appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
+
+        }else{
+            Log.d("NetworkTask, onPostExecute ","Text empty");
+        }
+    }
 }
+
+
