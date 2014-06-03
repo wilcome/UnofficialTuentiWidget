@@ -83,6 +83,21 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     protected void onPreExecute() {
         Log.d("NetworkTask, onPreExecute","Start");
         remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+        //Create another intent for the case in which we push the widget
+        Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
+        intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
+        intentForceUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        PendingIntent pendingIntentForceUpdate = PendingIntent.getBroadcast(context,
+                appWidgetId,
+                intentForceUpdate,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        remoteViews.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
+        remoteViews.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
+
+
+        // Instruct the widget manager to update the widget
+        appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
 
     @Override
@@ -562,10 +577,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected void onPostExecute(String[] result) {
+        Log.d("NetworkTask, onPostExecute","Start");
+        remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
 
-        remoteViews.setViewVisibility(R.id.progressBar, View.GONE
-
-        );
         if(result != null){
             Log.d("NetworkTask, onPostExecute ","result[0]" + result[0]);
             Log.d("NetworkTask, onPostExecute ","result[1]" + result[1]);
