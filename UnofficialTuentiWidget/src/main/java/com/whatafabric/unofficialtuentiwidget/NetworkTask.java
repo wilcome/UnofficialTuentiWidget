@@ -8,11 +8,17 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
 
 import org.apache.http.Header;
@@ -585,12 +591,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             Log.d("NetworkTask, onPostExecute ","result[1]" + result[1]);
             Log.d("NetworkTask, onPostExecute ","result[2]" + result[2]);
 
-            remoteViews.setTextViewText(R.id.dataMoney, result[0]);
-            if(result[1]!="" && result[1]!=null) {
-                remoteViews.setTextViewText(R.id.dataNet, result[1]);
-            }else{
-                remoteViews.setTextViewText(R.id.dataNet, context.getString(R.string.nobundle));
-            }
 
             int bgId = 0;
             if(result[2]!="" && result[2]!=null){
@@ -604,6 +604,27 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         context.getPackageName());
             }
             remoteViews.setImageViewResource(R.id.annulus,bgId);
+
+
+            Bitmap bitmap = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            Paint p1 = new Paint();
+            p1.setColor(Color.BLUE);
+            RectF rectF1 = new RectF(0, 0, 38, 38);
+            canvas.drawArc (rectF1, 270, (int)(Double.parseDouble(result[2]) * 3.6), true, p1);
+            Paint p2 = new Paint();
+            p2.setColor(Color.WHITE);
+            RectF rectF2 = new RectF(4, 4, 34, 34);
+            canvas.drawArc (rectF2, 270, (int)(Double.parseDouble(result[2]) * 3.6), true, p2);
+            remoteViews.setImageViewBitmap(R.id.annulus,bitmap);
+
+            remoteViews.setTextViewText(R.id.dataMoney, result[0]);
+            if(result[1]!="" && result[1]!=null) {
+                remoteViews.setTextViewText(R.id.dataNet, result[1]);
+            }else{
+                remoteViews.setTextViewText(R.id.dataNet, context.getString(R.string.nobundle));
+            }
+
 
             //Create another intent for the case in which we push the widget
             Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
