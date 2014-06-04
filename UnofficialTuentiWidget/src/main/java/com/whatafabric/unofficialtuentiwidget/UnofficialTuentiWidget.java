@@ -11,6 +11,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -28,6 +30,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     public static final String FORCE_UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.FORCE_UPDATE_WIDGET";
     public Context context;
     private static HashMap<Integer, Uri> uris = new HashMap<Integer, Uri>();
+    private static int squareSide = 40; //dp in xdpi
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -58,6 +61,9 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     @Override
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
+        Log.d("UnofficialTuentiWidget:onEnabled", "Start");
+        squareSide = Math.round(40 * (context.getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
+        Log.d("UnofficialTuentiWidget:onEnabled", "squareSide set to: "+squareSide);
     }
 
 
@@ -65,6 +71,19 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
+                                          int appWidgetId, Bundle newOptions) {
+        //int minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int maxWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
+        //int minHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+        int maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+        int dp = maxWidth < maxHeight ? maxWidth : maxHeight;
+        squareSide = Math.round(dp * (context.getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
+        this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{appWidgetId});
+
     }
 
     @Override
@@ -98,11 +117,12 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     }
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,int appWidgetId) {
+
         Log.d("UnofficialTuentiWidget:updateAppWidget ","begin");
         HashMap<String, String> dataMap = UnofficialTuentiWidgetConfigureActivity.loadData(context, appWidgetId);
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.unofficial_tuenti_widget);
-        NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId);
+        NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide);
         nt.execute(dataMap);
     }
 

@@ -18,6 +18,7 @@ import android.graphics.drawable.shapes.ArcShape;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -75,17 +76,20 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     private String dataVAT;
     private String dataBundlePrice;
     int appWidgetId;
+    private int squareSide;
 
     public NetworkTask(Context context,
                        RemoteViews remoteViews,
                        AppWidgetManager appWidgetManager,
-                       int appWidgetId){
+                       int appWidgetId,
+                       int squareSide){
         Log.d("NetworkTask:NetworkTask ", "Starts");
 
         this.remoteViews = remoteViews;
         this.appWidgetManager = appWidgetManager;
         this.appWidgetId = appWidgetId;
         this.context = context;
+        this.squareSide = squareSide;
     }
 
     @Override
@@ -592,7 +596,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         return sb.toString();
     }
 
-
     @Override
     protected void onPostExecute(String[] result) {
         Log.d("NetworkTask, onPostExecute","Start");
@@ -603,7 +606,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             Log.d("NetworkTask, onPostExecute ","result[1]" + result[1]);
             Log.d("NetworkTask, onPostExecute ","result[2]" + result[2]);
 
-
+            /*
             int bgId = 0;
             if(result[2]!="" && result[2]!=null){
                 bgId = context.getResources().getIdentifier("tuenti_widget_"+result[2]+"_annulus",
@@ -616,30 +619,65 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         context.getPackageName());
             }
             remoteViews.setImageViewResource(R.id.annulus,bgId);
+            */
 
+            if(result[2]==null){
+                result[2]="100";
+            }
 
-            /*
-            DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-
-            int px = Math.round(40 * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
-            Log.d("pixels = ", ""+px);
-            Bitmap bitmap = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+            Log.d("pixels = ", ""+squareSide);
+            Bitmap bitmap = Bitmap.createBitmap(squareSide, squareSide, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
+            int borderSize = (int) (squareSide*0.03);
+            int innerSize = (int) (squareSide*0.07);
+
             Paint p1 = new Paint();
             p1.setAntiAlias(true);
             p1.setFilterBitmap(true);
             p1.setDither(true);
             p1.setColor(Color.parseColor("#2998d5"));
-            RectF rectF1 = new RectF(0, 0, px, px);
-            canvas.drawArc (rectF1, 270, (int)(Double.parseDouble(result[2]) * 3.6), true, p1);
+            RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
+            canvas.drawArc (rectF1, 0, 360, true, p1);
+
             Paint p2 = new Paint();
             p2.setAntiAlias(true);
             p2.setFilterBitmap(true);
             p2.setDither(true);
             p2.setColor(Color.WHITE);
-            RectF rectF2 = new RectF(4, 4, px-4, px-4);
-            canvas.drawArc (rectF2,  0, 360, true, p2);
+            RectF rectF2 = new RectF(borderSize, borderSize, squareSide-borderSize, squareSide-borderSize);
+            canvas.drawArc (rectF2, 0, 360, true, p2);
 
+            Paint p3 = new Paint();
+            p3.setAntiAlias(true);
+            p3.setFilterBitmap(true);
+            p3.setDither(true);
+            p3.setColor(Color.parseColor("#2998d5"));
+            RectF rectF3 = new RectF(1, 1, squareSide-1, squareSide-1);
+            canvas.drawArc (rectF3, 270, (int)(Double.parseDouble(result[2]) * 3.6), true, p3);
+
+            Paint p4 = new Paint();
+            p4.setAntiAlias(true);
+            p4.setFilterBitmap(true);
+            p4.setDither(true);
+            p4.setColor(Color.parseColor("#2998d5"));
+            RectF rectF4 = new RectF(borderSize + innerSize,
+                                     borderSize + innerSize,
+                                     squareSide-(borderSize + innerSize),
+                                     squareSide-(borderSize + innerSize));
+            canvas.drawArc (rectF4, 0, 360, true, p4);
+
+            Paint p5 = new Paint();
+            p5.setAntiAlias(true);
+            p5.setFilterBitmap(true);
+            p5.setDither(true);
+            p5.setColor(Color.WHITE);
+            RectF rectF5 = new RectF(borderSize * 2 + innerSize,
+                                     borderSize * 2 + innerSize,
+                                     squareSide-(borderSize * 2 + innerSize),
+                                     squareSide-(borderSize * 2 + innerSize));
+            canvas.drawArc (rectF5,  0, 360, true, p5);
+
+            /*
             Paint p3 = new Paint();
             p3.setAntiAlias(true);
             p3.setFilterBitmap(true);
@@ -652,9 +690,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             //((textPaint.descent() + textPaint.ascent()) / 2) is the distance from the baseline to the center.
             canvas.drawText(result[0]+"/n"+result[1], xPos, yPos, p3);
 
-            remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
             */
 
+            remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
             Log.d("NetworkTask, onPostExecute","after setting annulus");
 
             remoteViews.setTextViewText(R.id.dataMoney, result[0]);
