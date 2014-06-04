@@ -13,9 +13,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.ArcShape;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -88,7 +91,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     @Override
     protected void onPreExecute() {
         Log.d("NetworkTask, onPreExecute","Start");
-        remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+        remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.VISIBLE);
         //Create another intent for the case in which we push the widget
         Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
         intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
@@ -130,6 +133,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         result[0] = dataMoney;
         result[1] = dataNet;
         result[2] = dataPercentage;
+
+        boolean test = false;
+        if(!test){
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
                 CookieManager cookieManager = new CookieManager();
@@ -457,6 +463,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             }
             return result;
         }
+        }else{
+            result[0] = "5 €";
+            result[1] = "900 MB";
+            result[2] = "90";
+            return result;
+        }
     }
 
 
@@ -584,7 +596,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     @Override
     protected void onPostExecute(String[] result) {
         Log.d("NetworkTask, onPostExecute","Start");
-        remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
+        remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
 
         if(result != null){
             Log.d("NetworkTask, onPostExecute ","result[0]" + result[0]);
@@ -606,17 +618,44 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             remoteViews.setImageViewResource(R.id.annulus,bgId);
 
 
-            Bitmap bitmap = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888);
+            /*
+            DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+
+            int px = Math.round(40 * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+            Log.d("pixels = ", ""+px);
+            Bitmap bitmap = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             Paint p1 = new Paint();
-            p1.setColor(Color.BLUE);
-            RectF rectF1 = new RectF(0, 0, 38, 38);
+            p1.setAntiAlias(true);
+            p1.setFilterBitmap(true);
+            p1.setDither(true);
+            p1.setColor(Color.parseColor("#2998d5"));
+            RectF rectF1 = new RectF(0, 0, px, px);
             canvas.drawArc (rectF1, 270, (int)(Double.parseDouble(result[2]) * 3.6), true, p1);
             Paint p2 = new Paint();
+            p2.setAntiAlias(true);
+            p2.setFilterBitmap(true);
+            p2.setDither(true);
             p2.setColor(Color.WHITE);
-            RectF rectF2 = new RectF(4, 4, 34, 34);
-            canvas.drawArc (rectF2, 270, (int)(Double.parseDouble(result[2]) * 3.6), true, p2);
-            remoteViews.setImageViewBitmap(R.id.annulus,bitmap);
+            RectF rectF2 = new RectF(4, 4, px-4, px-4);
+            canvas.drawArc (rectF2,  0, 360, true, p2);
+
+            Paint p3 = new Paint();
+            p3.setAntiAlias(true);
+            p3.setFilterBitmap(true);
+            p3.setDither(true);
+            p3.setColor(Color.parseColor("#2998d5"));
+            p3.setTextSize(12);
+            p3.setTextAlign(Paint.Align.CENTER);
+            int xPos = (canvas.getWidth() / 2);
+            int yPos = (int) ((canvas.getHeight() / 2) - ((p3.descent() + p3.ascent()) / 2)) ;
+            //((textPaint.descent() + textPaint.ascent()) / 2) is the distance from the baseline to the center.
+            canvas.drawText(result[0]+"/n"+result[1], xPos, yPos, p3);
+
+            remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
+            */
+
+            Log.d("NetworkTask, onPostExecute","after setting annulus");
 
             remoteViews.setTextViewText(R.id.dataMoney, result[0]);
             if(result[1]!="" && result[1]!=null) {
