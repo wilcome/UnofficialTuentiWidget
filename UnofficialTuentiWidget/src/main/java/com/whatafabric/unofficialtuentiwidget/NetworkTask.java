@@ -13,16 +13,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.ArcShape;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.RemoteViews;
 
 import org.apache.http.Header;
@@ -76,7 +72,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     private String dataVAT;
     private String dataBundlePrice;
     int appWidgetId;
-    private int squareSide;
+    private static int squareSide;
 
     public NetworkTask(Context context,
                        RemoteViews remoteViews,
@@ -85,10 +81,11 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                        int squareSide){
         Log.d("NetworkTask:NetworkTask ", "Starts");
 
+        this.context = context;
         this.remoteViews = remoteViews;
         this.appWidgetManager = appWidgetManager;
+        Log.d("NetworkTask:NetworkTask ", "appWidgetId = " + appWidgetId + ", squareSide = " + squareSide);
         this.appWidgetId = appWidgetId;
-        this.context = context;
         this.squareSide = squareSide;
     }
 
@@ -96,6 +93,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     protected void onPreExecute() {
         Log.d("NetworkTask, onPreExecute","Start");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.VISIBLE);
+        Log.d("NetworkTask, onPreExecute","ProgressBar VISIBLE, appWidgetd = " + appWidgetId);
         //Create another intent for the case in which we push the widget
         Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
         intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
@@ -406,7 +404,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     }
                     sreturned = convertStreamToString(instream);
                     // Closing the input stream will trigger connection release
-                    //Log.d("Network,doInBackground: ", sreturned);
                     instream.close();
                 }
 
@@ -439,7 +436,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         sreturned = convertStreamToString(instream);
                         instream.close();
                     }
-
 
                     if ((sreturned.contains("tu-dash-balance")) &&
                             !(sreturned.contains(context.getResources().getString(R.string.loading))))
@@ -600,32 +596,25 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     protected void onPostExecute(String[] result) {
         Log.d("NetworkTask, onPostExecute","Start");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
+        Log.d("NetworkTask, onPreExecute","ProgressBar GONE, appWidgetd = " + appWidgetId);
+        updateRemoteViews(result);
+
+    }
+
+    public void updateRemoteViews (String[] result){
 
         if(result != null){
-            Log.d("NetworkTask, onPostExecute ","result[0]" + result[0]);
-            Log.d("NetworkTask, onPostExecute ","result[1]" + result[1]);
-            Log.d("NetworkTask, onPostExecute ","result[2]" + result[2]);
-
-            /*
-            int bgId = 0;
-            if(result[2]!="" && result[2]!=null){
-                bgId = context.getResources().getIdentifier("tuenti_widget_"+result[2]+"_annulus",
-                        "drawable",
-                        context.getPackageName());
-
-            }else{
-                bgId = context.getResources().getIdentifier("tuenti_widget_100_annulus",
-                        "drawable",
-                        context.getPackageName());
-            }
-            remoteViews.setImageViewResource(R.id.annulus,bgId);
-            */
+            Log.d("NetworkTask, updateRemoteViews ","result[0]" + result[0]);
+            Log.d("NetworkTask, updateRemoteViews ","result[1]" + result[1]);
+            Log.d("NetworkTask, updateRemoteViews ","result[2]" + result[2]);
 
             if(result[2]==null){
                 result[2]="100";
             }
 
-            Log.d("pixels = ", ""+squareSide);
+            //squareSide = 200;
+            Log.d("squareSide = ", "" + squareSide);
+
             Bitmap bitmap = Bitmap.createBitmap(squareSide, squareSide, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             int borderSize = (int) (squareSide*0.03);
@@ -661,9 +650,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             p4.setDither(true);
             p4.setColor(Color.parseColor("#2998d5"));
             RectF rectF4 = new RectF(borderSize + innerSize,
-                                     borderSize + innerSize,
-                                     squareSide-(borderSize + innerSize),
-                                     squareSide-(borderSize + innerSize));
+                    borderSize + innerSize,
+                    squareSide-(borderSize + innerSize),
+                    squareSide-(borderSize + innerSize));
             canvas.drawArc (rectF4, 0, 360, true, p4);
 
             Paint p5 = new Paint();
@@ -672,31 +661,34 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             p5.setDither(true);
             p5.setColor(Color.WHITE);
             RectF rectF5 = new RectF(borderSize * 2 + innerSize,
-                                     borderSize * 2 + innerSize,
-                                     squareSide-(borderSize * 2 + innerSize),
-                                     squareSide-(borderSize * 2 + innerSize));
+                    borderSize * 2 + innerSize,
+                    squareSide-(borderSize * 2 + innerSize),
+                    squareSide-(borderSize * 2 + innerSize));
             canvas.drawArc (rectF5,  0, 360, true, p5);
 
-            /*
-            Paint p3 = new Paint();
-            p3.setAntiAlias(true);
-            p3.setFilterBitmap(true);
-            p3.setDither(true);
-            p3.setColor(Color.parseColor("#2998d5"));
-            p3.setTextSize(12);
-            p3.setTextAlign(Paint.Align.CENTER);
-            int xPos = (canvas.getWidth() / 2);
-            int yPos = (int) ((canvas.getHeight() / 2) - ((p3.descent() + p3.ascent()) / 2)) ;
-            //((textPaint.descent() + textPaint.ascent()) / 2) is the distance from the baseline to the center.
-            canvas.drawText(result[0]+"/n"+result[1], xPos, yPos, p3);
-
-            */
-
             remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
-            Log.d("NetworkTask, onPostExecute","after setting annulus");
 
-            remoteViews.setTextViewText(R.id.dataMoney, result[0]);
-            if(result[1]!="" && result[1]!=null) {
+            if(result[0]!=null && result[0]!="") {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                    int moneySize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[0].length());
+                    remoteViews.setTextViewTextSize(R.id.dataMoney, TypedValue.COMPLEX_UNIT_PX, moneySize);
+                    Log.d("NetworkTask, updateRemoteViews", "money size = " + moneySize);
+                }
+                remoteViews.setTextViewText(R.id.dataMoney, result[0]);
+            }else{
+                remoteViews.setTextViewText(R.id.dataMoney, "0 €");
+            }
+
+
+
+            if(result[1]!=null && result[1]!="") {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                    if(result[1].length() != 0) {
+                        int dataSize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[1].length());
+                        Log.d("NetworkTask, updateRemoteViews", "data size = " + dataSize);
+                        remoteViews.setTextViewTextSize(R.id.dataNet, TypedValue.COMPLEX_UNIT_PX, dataSize);
+                    }
+                }
                 remoteViews.setTextViewText(R.id.dataNet, result[1]);
             }else{
                 remoteViews.setTextViewText(R.id.dataNet, context.getString(R.string.nobundle));
@@ -722,7 +714,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         }else{
             Log.d("NetworkTask, onPostExecute ","Text empty");
         }
+
     }
+
+
 }
 
 

@@ -109,7 +109,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
 
             // It is the responsibility of the configuration activity to update the app widget
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            UnofficialTuentiWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
+            UnofficialTuentiWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId, false);
 
             // Make sure we pass back the original appWidgetId
             Intent resultValue = new Intent();
@@ -167,7 +167,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         for (HashMap.Entry<String, String> entry : dataMap.entrySet())
         {
             if(!entry.getKey().contains("password"))
-                Log.d("UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
+                Log.d("UnofficialTuentiWidgetConfigureActivity:saveData ", entry.getKey() + "/" + entry.getValue());
         }
         try {
             ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
