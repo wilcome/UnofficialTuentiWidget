@@ -98,25 +98,28 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     {
         String action = intent.getAction();
         Log.d("UnofficialTuentiWidget:onReceive", "action: " + action);
+
         if(action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE) ||
                 action.equals(UPDATE_WIDGET) || action.equals(FORCE_UPDATE_WIDGET))
         {
             //Check if there is a single widget ID.
-            int widgetID = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
+            int widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                                              AppWidgetManager.INVALID_APPWIDGET_ID);
+
+            Log.d("UnofficialTuentiWidget:onReceive", "widgetId: " + widgetId);
             //If there is no single ID, call the super implementation.
-            if(widgetID == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            if(widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
                 super.onReceive(context, intent);
                 //Otherwise call our onUpdate() passing a one element array, with the retrieved ID.
             }else if (action.equals(FORCE_UPDATE_WIDGET)) {
                 Log.d("UnofficialTuentiWidget:onReceive", "force update");
-                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
+                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetId});
             }else if(action.equals(UPDATE_WIDGET)){
                 Log.d("UnofficialTuentiWidget:onReceive", "kernel update");
-                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
+                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetId});
             }else if(action.equals(AppWidgetManager.EXTRA_APPWIDGET_ID)){
                 Log.d("UnofficialTuentiWidget:onReceive", "other update ?¿");
-                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetID});
+                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetId});
             }
         }
         else

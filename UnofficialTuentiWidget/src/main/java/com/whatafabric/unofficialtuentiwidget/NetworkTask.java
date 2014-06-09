@@ -139,7 +139,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         boolean test = false;
         if(!test){
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
                 CookieManager cookieManager = new CookieManager();
                 CookieHandler.setDefault(cookieManager);
 
@@ -294,134 +294,103 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap);
 
                 return result;
-        }else {
-            try {
-                // Create a local instance of cookie store
-                BasicCookieStore cookieStore =  new BasicCookieStore();
+            }else {
+                try {
+                    // Create a local instance of cookie store
+                    BasicCookieStore cookieStore =  new BasicCookieStore();
 
-                // Create local HTTP context
-                HttpContext localContext = new BasicHttpContext();
-                // Bind custom cookie store to the local context
-                localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+                    // Create local HTTP context
+                    HttpContext localContext = new BasicHttpContext();
+                    // Bind custom cookie store to the local context
+                    localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 
-                HttpGet httpGet = new HttpGet("https://www.tuenti.com/?m=Login");
-                HttpParams httpParameters = new BasicHttpParams();
-                // Set the timeout in milliseconds until a connection is established.
-                // The default value is zero, that means the timeout is not used.
-                int timeoutConnection = 3000;
-                HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
-                // Set the default socket timeout (SO_TIMEOUT)
-                // in milliseconds which is the timeout for waiting for data.
-                int timeoutSocket = 5000;
-                HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
+                    HttpGet httpGet = new HttpGet("https://www.tuenti.com/?m=Login");
+                    HttpParams httpParameters = new BasicHttpParams();
+                    // Set the timeout in milliseconds until a connection is established.
+                    // The default value is zero, that means the timeout is not used.
+                    int timeoutConnection = 3000;
+                    HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+                    // Set the default socket timeout (SO_TIMEOUT)
+                    // in milliseconds which is the timeout for waiting for data.
+                    int timeoutSocket = 5000;
+                    HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
 
-                httpGet.setHeader("Referer", "https://www.tuenti.com/?gotHash=1");
-                httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                    httpGet.setHeader("Referer", "https://www.tuenti.com/?gotHash=1");
+                    httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 
-                AndroidHttpClient httpClient = AndroidHttpClient.newInstance("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
-                HttpResponse response = httpClient.execute(httpGet,localContext);
-                HttpEntity entity = response.getEntity();
-                String sreturned = "";
+                    AndroidHttpClient httpClient = AndroidHttpClient.newInstance("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
+                    HttpResponse response = httpClient.execute(httpGet,localContext);
+                    HttpEntity entity = response.getEntity();
+                    String sreturned = "";
 
-                if (entity != null) {
-                    InputStream instream = entity.getContent();
-                    // check if the response is gzipped
-                    Header encoding = response.getFirstHeader("Content-Encoding");
-                    if (encoding != null && encoding.getValue().equals("gzip")) {
-                        instream = new GZIPInputStream(instream);
+                    if (entity != null) {
+                        InputStream instream = entity.getContent();
+                        // check if the response is gzipped
+                        Header encoding = response.getFirstHeader("Content-Encoding");
+                        if (encoding != null && encoding.getValue().equals("gzip")) {
+                            instream = new GZIPInputStream(instream);
+                        }
+                        sreturned = convertStreamToString(instream);
+                        // Closing the input stream will trigger connection release
+                        //Log.d("Network,doInBackground: ", sreturned);
+                        instream.close();
                     }
-                    sreturned = convertStreamToString(instream);
-                    // Closing the input stream will trigger connection release
-                    //Log.d("Network,doInBackground: ", sreturned);
-                    instream.close();
-                }
 
-                //Obtain CSRF from body
-                String csrf = "";
-                Pattern pcsrf = Pattern.compile("\"csrf\"*+[^\"]*+\"([^\"]+)\"|\"csfr\"*+[^\"]*+\"([^\"]+)\"");
-                Matcher mcsrf = pcsrf.matcher(sreturned);
+                    //Obtain CSRF from body
+                    String csrf = "";
+                    Pattern pcsrf = Pattern.compile("\"csrf\"*+[^\"]*+\"([^\"]+)\"|\"csfr\"*+[^\"]*+\"([^\"]+)\"");
+                    Matcher mcsrf = pcsrf.matcher(sreturned);
 
-                if (mcsrf.find()) {
-                    if (mcsrf.group(1) != null) {
-                        csrf = mcsrf.group(1);
-                    } else {
-                        csrf = mcsrf.group(2);
+                    if (mcsrf.find()) {
+                        if (mcsrf.group(1) != null) {
+                            csrf = mcsrf.group(1);
+                        } else {
+                            csrf = mcsrf.group(2);
+                        }
                     }
-                }
 
-                Log.d("NetworkTask:doInBackground (2.2)", "CSRF = " + csrf);
+                    Log.d("NetworkTask:doInBackground (2.2)", "CSRF = " + csrf);
 
-                HttpPost httpPost = new HttpPost("https://secure.tuenti.com/?m=Login&func=do_login");
-                httpPost.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-                httpPost.setHeader("Referer", "https://www.tuenti.com/?m=Login");
+                    HttpPost httpPost = new HttpPost("https://secure.tuenti.com/?m=Login&func=do_login");
+                    httpPost.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                    httpPost.setHeader("Referer", "https://www.tuenti.com/?m=Login");
 
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);
+                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);
 
-                nameValuePairs.add(new BasicNameValuePair("timezone", "1"));
-                nameValuePairs.add(new BasicNameValuePair("timestamp", "1"));
-                nameValuePairs.add(new BasicNameValuePair("email", user));
-                nameValuePairs.add(new BasicNameValuePair("input_password", password));
-                nameValuePairs.add(new BasicNameValuePair("csfr", csrf));
-                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    nameValuePairs.add(new BasicNameValuePair("timezone", "1"));
+                    nameValuePairs.add(new BasicNameValuePair("timestamp", "1"));
+                    nameValuePairs.add(new BasicNameValuePair("email", user));
+                    nameValuePairs.add(new BasicNameValuePair("input_password", password));
+                    nameValuePairs.add(new BasicNameValuePair("csfr", csrf));
+                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-                httpPost.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.NETSCAPE);
+                    httpPost.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.NETSCAPE);
 
-                response = httpClient.execute(httpPost,localContext);
-                entity = response.getEntity();
+                    response = httpClient.execute(httpPost,localContext);
+                    entity = response.getEntity();
 
-                if (entity != null) {
-                    InputStream instream = entity.getContent();
-                    // check if the response is gzipped
-                    Header encoding = response.getFirstHeader("Content-Encoding");
-                    if (encoding != null && encoding.getValue().equals("gzip")) {
-                        instream = new GZIPInputStream(instream);
+                    if (entity != null) {
+                        InputStream instream = entity.getContent();
+                        // check if the response is gzipped
+                        Header encoding = response.getFirstHeader("Content-Encoding");
+                        if (encoding != null && encoding.getValue().equals("gzip")) {
+                            instream = new GZIPInputStream(instream);
+                        }
+                        sreturned = convertStreamToString(instream);
+                        // Closing the input stream will trigger connection release
+                        //Log.d("Network,doInBackground: ", sreturned);
+                        instream.close();
                     }
-                    sreturned = convertStreamToString(instream);
-                    // Closing the input stream will trigger connection release
-                    //Log.d("Network,doInBackground: ", sreturned);
-                    instream.close();
-                }
-
-                httpGet = new HttpGet("https://www-1.tuenti.com/?m=Accountdashboard&func=index&utm_content=active_subscriber&utm_source=internal&utm_medium=mobile_tab&utm_campaign=cupcake_fixed&ajax=1");
-
-                httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-                httpGet.setHeader("Accept-Language", "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3");
-                httpGet.setHeader("Accept-Encoding", "gzip, deflate");
-                httpGet.setHeader("Referer", "https://www.tuenti.com/?m=Login");
-                httpGet.setHeader("Connection", "Keep-alive");
-                httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
-
-                response = httpClient.execute(httpGet,localContext);
-                entity = response.getEntity();
-
-                if (entity != null) {
-                    InputStream instream = entity.getContent();
-                    // check if the response is gzipped
-                    Header encoding = response.getFirstHeader("Content-Encoding");
-                    if (encoding != null && encoding.getValue().equals("gzip")) {
-                        instream = new GZIPInputStream(instream);
-                    }
-                    sreturned = convertStreamToString(instream);
-                    // Closing the input stream will trigger connection release
-                    instream.close();
-                }
-
-
-                int counter = 0;
-                int sleepingTime = SLEEPING_TIME;
-                while (counter != COUNT_LIMIT) {
-                    Log.d("NetworkTask:doInBackground (2.2)", "Sleeping " + sleepingTime + " s");
-                    Thread.sleep(sleepingTime); //Wait data for being accessible and then request again
-                    Log.d("NetworkTask:doInBackground (2.2)", "Time to wake up and ask again!");
 
                     httpGet = new HttpGet("https://www-1.tuenti.com/?m=Accountdashboard&func=index&utm_content=active_subscriber&utm_source=internal&utm_medium=mobile_tab&utm_campaign=cupcake_fixed&ajax=1");
+
                     httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
                     httpGet.setHeader("Accept-Language", "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3");
                     httpGet.setHeader("Accept-Encoding", "gzip, deflate");
                     httpGet.setHeader("Referer", "https://www.tuenti.com/?m=Login");
                     httpGet.setHeader("Connection", "Keep-alive");
                     httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
 
                     response = httpClient.execute(httpGet,localContext);
                     entity = response.getEntity();
@@ -434,35 +403,72 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                             instream = new GZIPInputStream(instream);
                         }
                         sreturned = convertStreamToString(instream);
+                        // Closing the input stream will trigger connection release
                         instream.close();
                     }
 
-                    if ((sreturned.contains("tu-dash-balance")) &&
-                            !(sreturned.contains(context.getResources().getString(R.string.loading))))
-                        break;
-                    counter++;
-                    sleepingTime += sleepingTime;
 
+                    int counter = 0;
+                    int sleepingTime = SLEEPING_TIME;
+                    while (counter != COUNT_LIMIT) {
+                        Log.d("NetworkTask:doInBackground (2.2)", "Sleeping " + sleepingTime + " s");
+                        Thread.sleep(sleepingTime); //Wait data for being accessible and then request again
+                        Log.d("NetworkTask:doInBackground (2.2)", "Time to wake up and ask again!");
+
+                        httpGet = new HttpGet("https://www-1.tuenti.com/?m=Accountdashboard&func=index&utm_content=active_subscriber&utm_source=internal&utm_medium=mobile_tab&utm_campaign=cupcake_fixed&ajax=1");
+                        httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                        httpGet.setHeader("Accept-Language", "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3");
+                        httpGet.setHeader("Accept-Encoding", "gzip, deflate");
+                        httpGet.setHeader("Referer", "https://www.tuenti.com/?m=Login");
+                        httpGet.setHeader("Connection", "Keep-alive");
+                        httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        response = httpClient.execute(httpGet,localContext);
+                        entity = response.getEntity();
+
+                        if (entity != null) {
+                            InputStream instream = entity.getContent();
+                            // check if the response is gzipped
+                            Header encoding = response.getFirstHeader("Content-Encoding");
+                            if (encoding != null && encoding.getValue().equals("gzip")) {
+                                instream = new GZIPInputStream(instream);
+                            }
+                            sreturned = convertStreamToString(instream);
+                            instream.close();
+                        }
+
+                        if ((sreturned.contains("tu-dash-balance")) &&
+                                !(sreturned.contains(context.getResources().getString(R.string.loading))))
+                            break;
+                        counter++;
+                        sleepingTime += sleepingTime;
+
+                    }
+
+                    if (counter == COUNT_LIMIT) {
+                        Log.d("NetworkTask:doInBackground (2.2)", "data not found. :'(");
+                        return result;
+                    }
+
+                    result = extractResult(sreturned);
+
+                    httpClient.close();
+
+                }catch(IOException e){
+                    Log.e("Network,doInBackground: (2.2)", "Error IOException");
+                    e.printStackTrace();
+                }catch(InterruptedException e){
+                    Log.e("Network,doInBackground: (2.2)", "Error IOException");
+                    e.printStackTrace();
                 }
 
-                if (counter == COUNT_LIMIT) {
-                    Log.d("NetworkTask:doInBackground (2.2)", "data not found. :'(");
-                    return result;
-                }
-
-                result = extractResult(sreturned);
-
-                httpClient.close();
-
-            }catch(IOException e){
-                Log.e("Network,doInBackground: (2.2)", "Error IOException");
-                e.printStackTrace();
-            }catch(InterruptedException e){
-                Log.e("Network,doInBackground: (2.2)", "Error IOException");
-                e.printStackTrace();
+                //Before finish store the results in the Map
+                dataMap.put(appWidgetId + "_dataMoney", result[0]);
+                dataMap.put(appWidgetId + "_dataNet", result[1]);
+                dataMap.put(appWidgetId + "_dataPercentage", result[2]);
+                UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap);
+                return result;
             }
-            return result;
-        }
         }else{
             result[0] = "5 €";
             result[1] = "900 MB";
@@ -596,12 +602,14 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     protected void onPostExecute(String[] result) {
         Log.d("NetworkTask, onPostExecute","Start");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
-        Log.d("NetworkTask, onPreExecute","ProgressBar GONE, appWidgetd = " + appWidgetId);
+        Log.d("NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
         updateRemoteViews(result);
 
     }
 
     public void updateRemoteViews (String[] result){
+        remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
+        Log.d("NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
 
         if(result != null){
             Log.d("NetworkTask, updateRemoteViews ","result[0]" + result[0]);
@@ -668,7 +676,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
             remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
 
-            if(result[0]!=null && result[0]!="") {
+            if(result[0]!=null && result[0] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     int moneySize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[0].length());
                     remoteViews.setTextViewTextSize(R.id.dataMoney, TypedValue.COMPLEX_UNIT_PX, moneySize);
@@ -681,7 +689,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
 
 
-            if(result[1]!=null && result[1]!="") {
+            if(result[1]!=null && result[1] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     if(result[1].length() != 0) {
                         int dataSize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[1].length());
