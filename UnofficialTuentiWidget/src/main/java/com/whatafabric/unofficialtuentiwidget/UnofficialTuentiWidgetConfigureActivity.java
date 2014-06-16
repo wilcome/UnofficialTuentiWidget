@@ -14,8 +14,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RemoteViews;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,8 +36,10 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     EditText tuUserText;
     EditText tuPasswordText;
-    EditText tuBundlePriceText;
-    EditText tuVATText;
+    TextView tuBundlePriceText;
+    TextView tuVATText;
+    EditText tuBundlePriceEditText;
+    EditText tuVATEditText;
     private int seconds = 3600;
     protected static final String FILENAME = "UnoficialTuentiData";
 
@@ -55,8 +59,10 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         setContentView(R.layout.unofficial_tuenti_widget_configure);
         tuUserText = (EditText)findViewById(R.id.tu_user);
         tuPasswordText = (EditText)findViewById(R.id.tu_password);
-        tuBundlePriceText = (EditText)findViewById(R.id.tu_bundlePrice);
-        tuVATText = (EditText)findViewById(R.id.tu_vat);
+        tuBundlePriceText = (TextView)findViewById(R.id.tu_bundlePriceText);
+        tuVATText = (TextView)findViewById(R.id.tu_vatText);
+        tuBundlePriceEditText = (EditText)findViewById(R.id.tu_bundlePriceEditText);
+        tuVATEditText = (EditText)findViewById(R.id.tu_vatEditText);
         findViewById(R.id.create_tuentiwidget).setOnClickListener(mOnClickListener);
 
         // Find the widget id from the intent.
@@ -75,11 +81,40 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:onCreate ", "mAppWidgetId = " + mAppWidgetId);
         tuUserText.setText("user@email.com");
         tuPasswordText.setText("password");
-        tuBundlePriceText.setText("0");
-        tuVATText.setText("0.21");
+
+        tuBundlePriceText.setVisibility(View.GONE);
+        tuVATText.setVisibility(View.GONE);
+        tuBundlePriceEditText.setText("0");
+        tuVATEditText.setText("0.0");
+        tuBundlePriceEditText.setVisibility(View.GONE);
+        tuVATEditText.setVisibility(View.GONE);
         tuPasswordText.requestFocus();
 
 
+    }
+
+    public void onCheckboxClicked(View view) {
+        boolean checked = ((CheckBox) view).isChecked();
+        switch(view.getId()) {
+            case R.id.checkbox_postpaid:
+                if (checked) {
+                    tuBundlePriceText.setVisibility(View.VISIBLE);
+                    tuVATText.setVisibility(View.VISIBLE);
+                    tuBundlePriceEditText.setText("0");
+                    tuVATEditText.setText("0.21");
+                    tuBundlePriceEditText.setVisibility(View.VISIBLE);
+                    tuVATEditText.setVisibility(View.VISIBLE);
+                    break;
+                }else {
+                    tuBundlePriceText.setVisibility(View.GONE);
+                    tuVATText.setVisibility(View.GONE);
+                    tuBundlePriceEditText.setText("0");
+                    tuVATEditText.setText("0.0");
+                    tuBundlePriceEditText.setVisibility(View.GONE);
+                    tuVATEditText.setVisibility(View.GONE);
+                    break;
+                }
+        }
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -91,8 +126,8 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             // When the button is clicked, store the string locally
             String widgetTuUserText = tuUserText.getText().toString();
             String widgetTuPasswordText = tuPasswordText.getText().toString();
-            String widgetTuBundlePriceText = tuBundlePriceText.getText().toString();
-            String widgetTuVATText = tuVATText.getText().toString();
+            String widgetTuBundlePriceText = tuBundlePriceEditText.getText().toString();
+            String widgetTuVATText = tuVATEditText.getText().toString();
 
             HashMap<String, String> dataMap = UnofficialTuentiWidgetConfigureActivity.loadData(context, mAppWidgetId);
 
@@ -164,14 +199,23 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     static void saveData(Context context, HashMap<String, String> dataMap) {
         Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:saveData ", "begin");
         File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
+
+        //
+        HashMap<String, String> internalDataMap = new HashMap<String, String>() ;
+
         for (HashMap.Entry<String, String> entry : dataMap.entrySet())
         {
+            if(entry.getValue()!=null){
+                internalDataMap.put(entry.getKey(),entry.getValue());
+            }else{
+                Log.d("UnofficialTuentiWidgetConfigureActivity:saveData BUG UNSOLVED: ",entry.getKey() + "/" + entry.getValue());
+            }
             if(!entry.getKey().contains("password"))
                 Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:saveData ", entry.getKey() + "/" + entry.getValue());
         }
         try {
             ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-            outputStream.writeObject(dataMap);
+            outputStream.writeObject(internalDataMap);
             outputStream.flush();
             outputStream.close();
         } catch (IOException e) {

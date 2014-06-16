@@ -16,5 +16,7 @@
     <string name="add_bundle_price_cb">Monthly bundle price: </string>
     <string name="vat">VAT</string>
     <string name="loading">oading billing info...</string>
+    <string name="postpaid">default postpaid data</string>
+
 
 </resources>

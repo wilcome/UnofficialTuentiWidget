@@ -64,6 +64,12 @@
 
             </LinearLayout>
 
+            <CheckBox android:id="@+id/checkbox_postpaid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/postpaid"
+                android:onClick="onCheckboxClicked"/>
+
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -71,13 +77,13 @@
                 android:padding="16dp">
 
                 <TextView
-                    android:id="@+id/textView"
+                    android:id="@+id/tu_bundlePriceText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/add_bundle_price_cb"/>
 
                 <EditText
-                    android:id="@+id/tu_bundlePrice"
+                    android:id="@+id/tu_bundlePriceEditText"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
@@ -95,13 +101,13 @@
                 android:id="@+id/linearLayout">
 
                 <TextView
-                    android:id="@+id/textView2"
+                    android:id="@+id/tu_vatText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/vat"/>
 
                 <EditText
-                    android:id="@+id/tu_vat"
+                    android:id="@+id/tu_vatEditText"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"

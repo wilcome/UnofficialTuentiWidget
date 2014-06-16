@@ -447,6 +447,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
                     if (counter == COUNT_LIMIT) {
                         Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "data not found. :'(");
+                        httpClient.close();
                         return result;
                     }
 
@@ -571,7 +572,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 result[1] = "";
             }
         }
-
         return result;
     }
 
@@ -686,7 +686,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             }else{
                 remoteViews.setTextViewText(R.id.dataMoney, "0 €");
             }
-
 
 
             if(result[1]!=null && result[1] != "") {
