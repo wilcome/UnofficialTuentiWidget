@@ -16,6 +16,6 @@
     <string name="add_bundle_price_cb">Precio del bono mensual: </string>
     <string name="vat">IVA</string>
     <string name="loading">argando...</string>
-    <string name="postpaid">postpago (datos por defecto)</string>
+    <string name="postpaid">contrato (datos por defecto)</string>
 
 </resources>

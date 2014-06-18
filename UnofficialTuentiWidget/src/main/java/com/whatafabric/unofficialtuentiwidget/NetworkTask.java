@@ -62,7 +62,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
-
+    private static boolean LOGGING = false;
     private static int SLEEPING_TIME = 1000; //in miliseconds
     private static int COUNT_LIMIT = 5; //in miliseconds
 
@@ -73,27 +73,28 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     private String dataBundlePrice;
     int appWidgetId;
     private static int squareSide;
+    
 
     public NetworkTask(Context context,
                        RemoteViews remoteViews,
                        AppWidgetManager appWidgetManager,
                        int appWidgetId,
                        int squareSide){
-        Log.d("UTuentiW,NetworkTask:NetworkTask ", "Starts");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "Starts");
 
         this.context = context;
         this.remoteViews = remoteViews;
         this.appWidgetManager = appWidgetManager;
-        Log.d("UTuentiW,NetworkTask:NetworkTask ", "appWidgetId = " + appWidgetId + ", squareSide = " + squareSide);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "appWidgetId = " + appWidgetId + ", squareSide = " + squareSide);
         this.appWidgetId = appWidgetId;
         this.squareSide = squareSide;
     }
 
     @Override
     protected void onPreExecute() {
-        Log.d("UTuentiW,NetworkTask, onPreExecute","Start");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","Start");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.VISIBLE);
-        Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar VISIBLE, appWidgetd = " + appWidgetId);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar VISIBLE, appWidgetd = " + appWidgetId);
         //Create another intent for the case in which we push the widget
         Intent intentForceUpdate = new Intent(context, UnofficialTuentiWidget.class);
         intentForceUpdate.setAction(UnofficialTuentiWidget.FORCE_UPDATE_WIDGET);
@@ -113,7 +114,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected String[] doInBackground(HashMap<String,String> ... params) {
-        Log.d("UTuentiW,NetworkTask:doInBackground ", "Starts");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Starts");
 
         String result[] = {"", "", ""};
 
@@ -126,11 +127,11 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         dataBundlePrice = dataMap.get(appWidgetId + "_dataBundlePrice");
         dataVAT = dataMap.get(appWidgetId + "_dataVAT");
 
-        Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataMoney = " + dataMoney);
-        Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataNet = " + dataNet);
-        Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataPercentage = " + dataPercentage);
-        Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataBundlePrice = " + dataBundlePrice);
-        Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataVAT = " + dataVAT);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataMoney = " + dataMoney);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataNet = " + dataNet);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataPercentage = " + dataPercentage);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataBundlePrice = " + dataBundlePrice);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataVAT = " + dataVAT);
 
         result[0] = dataMoney;
         result[1] = dataNet;
@@ -178,7 +179,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                             }
                         }
 
-                        Log.d("UTuentiW,NetworkTask:doInBackground ", "CSRF = " + csrf);
+                        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "CSRF = " + csrf);
 
                         //Login with user & password
                         link = "https://secure.tuenti.com/?m=Login&func=do_login";
@@ -194,8 +195,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
                         String userEncoded = URLEncoder.encode(user, "UTF-8");
                         String passwordEncoded = URLEncoder.encode(password, "UTF-8");
-                        //Log.d("UTuentiW,NetworkTask ", "userEncoded = " + userEncoded);
-                        //Log.d("UTuentiW,NetworkTask ", "passwordEncoded = " + passwordEncoded);
                         String urlParameters = "timezone=1&timestamp=1&email=" + userEncoded + "&input_password=" + passwordEncoded + "&csfr=" + csrf;
                         DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
                         wr.writeBytes(urlParameters);
@@ -203,7 +202,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         wr.close();
 
                         int status = urlConnection.getResponseCode();
-                        Log.d("UTuentiW,NetworkTask:doInBackground ", "status = " + status);
+                        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "status = " + status);
 
                         link = "https://www-1.tuenti.com/?m=Accountdashboard&func=index&utm_content=active_subscriber&utm_source=internal&utm_medium=mobile_tab&utm_campaign=cupcake_fixed&ajax=1";
 
@@ -231,9 +230,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         int counter = 0;
                         int sleepingTime = SLEEPING_TIME;
                         while (counter != COUNT_LIMIT) {
-                            Log.d("UTuentiW,NetworkTask:doInBackground ", "Sleeping " + sleepingTime + " s");
+                            if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Sleeping " + sleepingTime + " s");
                             Thread.sleep(sleepingTime); //Wait data for being accessible and then request again
-                            Log.d("UTuentiW,NetworkTask:doInBackground ", "Time to wake up and ask again!");
+                            if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Time to wake up and ask again!");
                             url = new URL(link);
                             urlConnection = (HttpsURLConnection) url.openConnection();
                             urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
@@ -266,22 +265,22 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         }
 
                         if (counter == COUNT_LIMIT) {
-                            Log.d("UTuentiW,NetworkTask:doInBackground ", "data not found. :'(");
+                            if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "data not found. :'(");
                             return result;
                         }
 
                         result = extractResult(sreturned);
 
                     } catch (MalformedURLException e) {
-                        Log.e("Network,doInBackground: ", "Error MalformedURLException");
+                        if (LOGGING) Log.e("Network,doInBackground: ", "Error MalformedURLException");
                         e.printStackTrace();
                         return result;
                     } catch (InterruptedException e) {
-                        Log.e("Network,doInBackground: ", "Error InterruptedException");
+                        if (LOGGING) Log.e("Network,doInBackground: ", "Error InterruptedException");
                         e.printStackTrace();
                         return result;
                     } catch (IOException e) {
-                        Log.e("Network,doInBackground: ", "Error IOException");
+                        if (LOGGING) Log.e("Network,doInBackground: ", "Error IOException");
                         e.printStackTrace();
                         return result;
                     }
@@ -332,7 +331,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         }
                         sreturned = convertStreamToString(instream);
                         // Closing the input stream will trigger connection release
-                        //Log.d("UTuentiW,Network,doInBackground: ", sreturned);
                         instream.close();
                     }
 
@@ -349,7 +347,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         }
                     }
 
-                    Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "CSRF = " + csrf);
+                    if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "CSRF = " + csrf);
 
                     HttpPost httpPost = new HttpPost("https://secure.tuenti.com/?m=Login&func=do_login");
                     httpPost.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
@@ -378,7 +376,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         }
                         sreturned = convertStreamToString(instream);
                         // Closing the input stream will trigger connection release
-                        //Log.d("UTuentiW,Network,doInBackground: ", sreturned);
                         instream.close();
                     }
 
@@ -411,9 +408,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     int counter = 0;
                     int sleepingTime = SLEEPING_TIME;
                     while (counter != COUNT_LIMIT) {
-                        Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "Sleeping " + sleepingTime + " s");
+                        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "Sleeping " + sleepingTime + " s");
                         Thread.sleep(sleepingTime); //Wait data for being accessible and then request again
-                        Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "Time to wake up and ask again!");
+                        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "Time to wake up and ask again!");
 
                         httpGet = new HttpGet("https://www-1.tuenti.com/?m=Accountdashboard&func=index&utm_content=active_subscriber&utm_source=internal&utm_medium=mobile_tab&utm_campaign=cupcake_fixed&ajax=1");
                         httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
@@ -446,7 +443,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     }
 
                     if (counter == COUNT_LIMIT) {
-                        Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "data not found. :'(");
+                        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground (2.2)", "data not found. :'(");
                         httpClient.close();
                         return result;
                     }
@@ -456,10 +453,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     httpClient.close();
 
                 }catch(IOException e){
-                    Log.e("Network,doInBackground: (2.2)", "Error IOException");
+                    if (LOGGING) Log.e("Network,doInBackground: (2.2)", "Error IOException");
                     e.printStackTrace();
                 }catch(InterruptedException e){
-                    Log.e("Network,doInBackground: (2.2)", "Error IOException");
+                    if (LOGGING) Log.e("Network,doInBackground: (2.2)", "Error IOException");
                     e.printStackTrace();
                 }
 
@@ -511,7 +508,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     private String[] extractResult(String sreturned){
         String result[] = {"","",""};
 
-        Log.d("UTuentiW,NetworkTask:doInBackground ", "Some data found! :)");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Some data found! :)");
         String consumption = "";
         Pattern pc1 = Pattern.compile("\\\\u20ac\\\\u00a0([0-9]+?\\.[0-9]*)");//Cases:  €0.15
         Matcher mc1 = pc1.matcher(sreturned);
@@ -523,16 +520,16 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         Matcher mc4 = pc4.matcher(sreturned);
 
         if (mc1.find()) {
-            Log.d("UTuentiW,NetworkTask:doInBackground ", "group1 = " + mc1.group(1));
+            if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "group1 = " + mc1.group(1));
             consumption = mc1.group(1);
         } else if (mc2.find()) {
-            Log.d("UTuentiW,NetworkTask:doInBackground ", "group2 = " + mc2.group(1));
+            if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "group2 = " + mc2.group(1));
             consumption = mc2.group(1);
         } else if (mc3.find()) {
-            Log.d("UTuentiW,NetworkTask:doInBackground ", "group3 = " + mc3.group(1));
+            if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "group3 = " + mc3.group(1));
             consumption = mc3.group(1);
         } else if (mc4.find()) {
-            Log.d("UTuentiW,NetworkTask:doInBackground ", "group4 = " + mc4.group(1));
+            if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "group4 = " + mc4.group(1));
             consumption = mc4.group(1);
         } else {
             //No money
@@ -543,7 +540,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         double consumptionDouble = (double) Math.round(((Double.parseDouble(consumption) *
                 (1 + Double.parseDouble(dataVAT))) +
                 Double.parseDouble(dataBundlePrice)) * 100) / 100;
-        Log.d("UTuentiW,NetworkTask:doInBackground ", consumptionDouble + " €");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", consumptionDouble + " €");
         result[0] = consumptionDouble + " €";
 
 
@@ -553,7 +550,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         if (matcherPER.find()) {
             percentage = matcherPER.group(1);
             result[2] = percentage;
-            Log.d("UTuentiW,NetworkTask ", percentage + " %");
+            if (LOGGING) Log.d("UTuentiW,NetworkTask ", percentage + " %");
 
             //percentage found ... It should exists bundle data
             Pattern patternMB = Pattern.compile("([0-9]{1,3}+)[^0-9]*>MB ");
@@ -563,7 +560,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             if (matcherGB.find()) {
                 String megaBytes = matcherGB.group(1) + matcherGB.group(2);
                 double gigasDouble = (double) Math.round((Double.parseDouble(megaBytes) / 1024) * 100) / 100;
-                Log.d("UTuentiW,NetworkTask ", +gigasDouble + " GB");
+                if (LOGGING) Log.d("UTuentiW,NetworkTask ", +gigasDouble + " GB");
                 result[1] = gigasDouble + " GB";
             } else if (matcherMB.find()) {
                 result[1] = matcherMB.group(1) + " MB";
@@ -600,28 +597,28 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected void onPostExecute(String[] result) {
-        Log.d("UTuentiW,NetworkTask, onPostExecute","Start");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute","Start");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
-        Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
         updateRemoteViews(result);
 
     }
 
     public void updateRemoteViews (String[] result){
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
-        Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
 
         if(result != null){
-            Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[0]" + result[0]);
-            Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[1]" + result[1]);
-            Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[2]" + result[2]);
+            if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[0]" + result[0]);
+            if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[1]" + result[1]);
+            if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[2]" + result[2]);
 
             if(result[2]==null){
                 result[2]="100";
             }
 
             //squareSide = 200;
-            Log.d("UTuentiW,squareSide = ", "" + squareSide);
+            if (LOGGING) Log.d("UTuentiW,squareSide = ", "" + squareSide);
 
             Bitmap bitmap = Bitmap.createBitmap(squareSide, squareSide, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
@@ -680,7 +677,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     int moneySize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[0].length());
                     remoteViews.setTextViewTextSize(R.id.dataMoney, TypedValue.COMPLEX_UNIT_PX, moneySize);
-                    Log.d("UTuentiW,NetworkTask, updateRemoteViews", "money size = " + moneySize);
+                    if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews", "money size = " + moneySize);
                 }
                 remoteViews.setTextViewText(R.id.dataMoney, result[0]);
             }else{
@@ -692,7 +689,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     if(result[1].length() != 0) {
                         int dataSize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[1].length());
-                        Log.d("UTuentiW,NetworkTask, updateRemoteViews", "data size = " + dataSize);
+                        if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews", "data size = " + dataSize);
                         remoteViews.setTextViewTextSize(R.id.dataNet, TypedValue.COMPLEX_UNIT_PX, dataSize);
                     }
                 }
@@ -719,7 +716,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 
         }else{
-            Log.d("UTuentiW,NetworkTask, onPostExecute ","Text empty");
+            if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute ","Text empty");
         }
 
     }
