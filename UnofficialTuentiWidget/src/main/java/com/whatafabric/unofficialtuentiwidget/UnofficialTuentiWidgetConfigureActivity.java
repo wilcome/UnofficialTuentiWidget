@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -32,7 +33,7 @@ import java.util.HashMap;
  * The configuration screen for the {@link UnofficialTuentiWidget UnofficialTuentiWidget} AppWidget.
  */
 public class UnofficialTuentiWidgetConfigureActivity extends Activity {
-    private static boolean LOGGING = false;
+    private static boolean LOGGING = true;
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     EditText tuUserText;
     EditText tuPasswordText;
@@ -140,7 +141,6 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
 
             saveData(context, dataMap);
 
-
             // It is the responsibility of the configuration activity to update the app widget
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             UnofficialTuentiWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId, false);
@@ -158,7 +158,6 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             intentUpdate.setAction(UnofficialTuentiWidget.UPDATE_WIDGET);//Set an action anyway to filter it in onReceive()
             intentUpdate.setData(uri);//One Alarm per instance.
             //We will need the exact instance to identify the intent.
-            UnofficialTuentiWidget.addUri(mAppWidgetId, uri);
             intentUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             PendingIntent pendingIntentAlarm = PendingIntent.getBroadcast(UnofficialTuentiWidgetConfigureActivity.this,
                     mAppWidgetId,
@@ -167,12 +166,13 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
 
             //Custom alarm that will update only when the system lets us do it.
             AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis()+(seconds*1000),
+            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime()+(seconds*1000),
                     (seconds*1000),
                     pendingIntentAlarm);
-            if (LOGGING) Log.d("UTuentiW,Ok Button", "Created Alarm. Action = " + UnofficialTuentiWidget.UPDATE_WIDGET +
-                    " URI = " + build.build().toString() +
+            if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:mOnClickListener",
+                    "Created Alarm. Action = " + UnofficialTuentiWidget.UPDATE_WIDGET +
+                    " URI = " + uri.toString() +
                     " Seconds = " + seconds);
 
             //Create another intent for the case in which we push the widget

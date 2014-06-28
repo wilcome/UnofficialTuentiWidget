@@ -62,7 +62,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
-    private static boolean LOGGING = false;
+    private static boolean LOGGING = true;
     private static int SLEEPING_TIME = 1000; //in miliseconds
     private static int COUNT_LIMIT = 5; //in miliseconds
 
@@ -80,7 +80,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                        AppWidgetManager appWidgetManager,
                        int appWidgetId,
                        int squareSide){
-        if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "Starts");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "Begin");
 
         this.context = context;
         this.remoteViews = remoteViews;
@@ -92,7 +92,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected void onPreExecute() {
-        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","Start");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","Begin");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.VISIBLE);
         if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar VISIBLE, appWidgetd = " + appWidgetId);
         //Create another intent for the case in which we push the widget
@@ -114,7 +114,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected String[] doInBackground(HashMap<String,String> ... params) {
-        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Starts");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Begin");
 
         String result[] = {"", "", ""};
 
@@ -597,7 +597,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected void onPostExecute(String[] result) {
-        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute","Start");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute","Begin");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
         if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
         updateRemoteViews(result);
