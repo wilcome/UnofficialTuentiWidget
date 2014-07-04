@@ -62,7 +62,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
-    private static boolean LOGGING = false;
+    private static boolean LOGGING = true;
     private static int SLEEPING_TIME = 1000; //in miliseconds
     private static int COUNT_LIMIT = 5; //in miliseconds
 
@@ -80,7 +80,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                        AppWidgetManager appWidgetManager,
                        int appWidgetId,
                        int squareSide){
-        if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "Starts");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "Begin");
 
         this.context = context;
         this.remoteViews = remoteViews;
@@ -92,7 +92,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected void onPreExecute() {
-        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","Start");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","Begin");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.VISIBLE);
         if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar VISIBLE, appWidgetd = " + appWidgetId);
         //Create another intent for the case in which we push the widget
@@ -114,18 +114,18 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected String[] doInBackground(HashMap<String,String> ... params) {
-        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Starts");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Begin");
 
         String result[] = {"", "", ""};
 
         HashMap<String, String> dataMap = params[0];
-        String user = dataMap.get(appWidgetId + "_user");
-        String password = dataMap.get(appWidgetId + "_password");
-        String dataMoney = dataMap.get(appWidgetId + "_dataMoney");
-        String dataNet = dataMap.get(appWidgetId + "_dataNet");
-        String dataPercentage = dataMap.get(appWidgetId + "_dataPercentage");
-        dataBundlePrice = dataMap.get(appWidgetId + "_dataBundlePrice");
-        dataVAT = dataMap.get(appWidgetId + "_dataVAT");
+        String user = dataMap.get("user");
+        String password = dataMap.get("password");
+        String dataMoney = dataMap.get("dataMoney");
+        String dataNet = dataMap.get("dataNet");
+        String dataPercentage = dataMap.get("dataPercentage");
+        dataBundlePrice = dataMap.get("dataBundlePrice");
+        dataVAT = dataMap.get("dataVAT");
 
         if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataMoney = " + dataMoney);
         if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "OLD dataNet = " + dataNet);
@@ -287,10 +287,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 }
 
                 //Before finish store the results in the Map
-                dataMap.put(appWidgetId + "_dataMoney", result[0]);
-                dataMap.put(appWidgetId + "_dataNet", result[1]);
-                dataMap.put(appWidgetId + "_dataPercentage", result[2]);
-                UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap);
+                dataMap.put("dataMoney", result[0]);
+                dataMap.put("dataNet", result[1]);
+                dataMap.put("dataPercentage", result[2]);
+                UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap,appWidgetId);
 
                 return result;
             }else {
@@ -461,10 +461,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 }
 
                 //Before finish store the results in the Map
-                dataMap.put(appWidgetId + "_dataMoney", result[0]);
-                dataMap.put(appWidgetId + "_dataNet", result[1]);
-                dataMap.put(appWidgetId + "_dataPercentage", result[2]);
-                UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap);
+                dataMap.put("dataMoney", result[0]);
+                dataMap.put("dataNet", result[1]);
+                dataMap.put("dataPercentage", result[2]);
+                UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap, appWidgetId);
                 return result;
             }
         }else{
@@ -597,7 +597,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
     @Override
     protected void onPostExecute(String[] result) {
-        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute","Start");
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute","Begin");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
         if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
         updateRemoteViews(result);
