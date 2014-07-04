@@ -131,15 +131,15 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
 
             HashMap<String, String> dataMap = UnofficialTuentiWidgetConfigureActivity.loadData(context, mAppWidgetId);
 
-            dataMap.put(mAppWidgetId + "_user",widgetTuUserText);
-            dataMap.put(mAppWidgetId + "_password",widgetTuPasswordText);
-            dataMap.put(mAppWidgetId + "_dataMoney","0 €");
-            dataMap.put(mAppWidgetId + "_dataNet","");
-            dataMap.put(mAppWidgetId + "_dataPercentage","100");
-            dataMap.put(mAppWidgetId + "_dataBundlePrice",widgetTuBundlePriceText);
-            dataMap.put(mAppWidgetId + "_dataVAT",widgetTuVATText);
+            dataMap.put("user",widgetTuUserText);
+            dataMap.put("password",widgetTuPasswordText);
+            dataMap.put("dataMoney","0 €");
+            dataMap.put("dataNet","");
+            dataMap.put("dataPercentage","100");
+            dataMap.put("dataBundlePrice",widgetTuBundlePriceText);
+            dataMap.put("dataVAT",widgetTuVATText);
 
-            saveData(context, dataMap);
+            saveData(context, dataMap, mAppWidgetId);
 
             // It is the responsibility of the configuration activity to update the app widget
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
@@ -195,30 +195,33 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     };
 
     //Save data object needed by the widget in a private file
-    static void saveData(Context context, HashMap<String, String> dataMap) {
+    static void saveData(Context context, HashMap<String, String> dataMap, int appWidgetId) {
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:saveData ", "begin");
-        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
+        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME + "_" + appWidgetId);
 
-        //
-        HashMap<String, String> internalDataMap = new HashMap<String, String>() ;
+        //If file doesn't already exist we don't do anything.
+        if (file.exists()) {
+            HashMap<String, String> internalDataMap = new HashMap<String, String>();
 
-        for (HashMap.Entry<String, String> entry : dataMap.entrySet())
-        {
-            if(entry.getValue()!=null){
-                internalDataMap.put(entry.getKey(),entry.getValue());
-            }else{
-                if (LOGGING) Log.d("UnofficialTuentiWidgetConfigureActivity:saveData BUG UNSOLVED: ",entry.getKey() + "/" + entry.getValue());
+            for (HashMap.Entry<String, String> entry : dataMap.entrySet()) {
+                if (entry.getValue() != null) {
+                    internalDataMap.put(entry.getKey(), entry.getValue());
+                } else {
+                    if (LOGGING)
+                        Log.d("UnofficialTuentiWidgetConfigureActivity:saveData BUG UNSOLVED: ", entry.getKey() + "/" + entry.getValue());
+                }
+                if (!entry.getKey().contains("password"))
+                    if (LOGGING)
+                        Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:saveData ", entry.getKey() + "/" + entry.getValue());
             }
-            if(!entry.getKey().contains("password"))
-                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:saveData ", entry.getKey() + "/" + entry.getValue());
-        }
-        try {
-            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-            outputStream.writeObject(internalDataMap);
-            outputStream.flush();
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+                outputStream.writeObject(internalDataMap);
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -227,7 +230,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     static HashMap<String, String> loadData(Context context, int appWidgetId) {
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "begin");
         HashMap<String,String> dataMap = new HashMap<String, String>();
-        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
+        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME + "_" + appWidgetId);
         try {
             if (file.exists()){
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ","file exists.");
@@ -242,13 +245,13 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                 }
             }else{
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:onCreate ","file doesn't exists.");
-                dataMap.put(appWidgetId+"_user","user");
-                dataMap.put(appWidgetId+"_password","password");
-                dataMap.put(appWidgetId+"_dataMoney","0 €");
-                dataMap.put(appWidgetId+"_dataNet","0 MB");
-                dataMap.put(appWidgetId+"_dataPercentage","0");
-                dataMap.put(appWidgetId+"_dataBundlePrice","0");
-                dataMap.put(appWidgetId+"_dataVAT","0.21");
+                dataMap.put("user","user");
+                dataMap.put("password","password");
+                dataMap.put("dataMoney","0 €");
+                dataMap.put("dataNet","0 MB");
+                dataMap.put("dataPercentage","0");
+                dataMap.put("dataBundlePrice","0");
+                dataMap.put("dataVAT","0.21");
 
                 ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
                 outputStream.writeObject(dataMap);
@@ -267,46 +270,11 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
     //Remove the private file
     static void deleteData(Context context, int appWidgetId) {
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:deleteData ", "begin");
-        File file = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
-        HashMap<String,String> dataMap,dataMapRemoveElements = new HashMap<String, String>();
-
+        String filename = FILENAME + "_" + appWidgetId;
+        File file = new File(context.getDir("data", MODE_PRIVATE), filename);
         if (file.exists()) {
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(file);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                dataMap = (HashMap<String, String>) ois.readObject();
-                dataMapRemoveElements = (HashMap<String, String>) dataMap.clone();
-                if(dataMap instanceof HashMap && dataMap.size()>0) {
-                    for (HashMap.Entry<String, String> entry : dataMap.entrySet()) {
-                        String key = entry.getKey();
-                        if (key.contains(String.valueOf(appWidgetId))) {
-                            dataMapRemoveElements.remove(key);
-                        }
-                    }
-                }
-                //Save the object again
-                ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-                outputStream.writeObject(dataMapRemoveElements);
-                outputStream.flush();
-                outputStream.close();
-                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:deleteData ", "deleted data of widgetId = " + appWidgetId);
-
-
-            }catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e){
-                e.printStackTrace();
-            }
-
-            //If after remove the data corresponding to this widget exists data from others we don't delete the file.
-            if (dataMapRemoveElements.size()>0){
-                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:deleteData ", "file still has other data so we do NOT delete it.");
-            }else {
-                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:deleteData ", "file exists and no other data remain so lets delete it");
-                file.delete();
-                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:deleteData ", "file deleted.");
-            }
+            file.delete();
+            if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:deleteData ", "file " + filename + " deleted.");
         }
     }
 }

@@ -39,16 +39,17 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "begin");
-        File file = new File(context.getDir("data",
-                UnofficialTuentiWidgetConfigureActivity.MODE_PRIVATE),
-                UnofficialTuentiWidgetConfigureActivity.FILENAME);
-        if(file.exists()){
-            this.context = context;
-            final int N = appWidgetIds.length;
-            for (int i=0; i<N; i++) {
-                updateAppWidget(context, appWidgetManager, appWidgetIds[i],false);
+        this.context = context;
+        final int N = appWidgetIds.length;
+        for (int i=0; i<N; i++) {
+            File file = new File(context.getDir("data",
+                    UnofficialTuentiWidgetConfigureActivity.MODE_PRIVATE),
+                    UnofficialTuentiWidgetConfigureActivity.FILENAME + "_" + appWidgetIds[i]);
+            if(file.exists()) {
+                updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
             }
         }
+
     }
 
     @Override
