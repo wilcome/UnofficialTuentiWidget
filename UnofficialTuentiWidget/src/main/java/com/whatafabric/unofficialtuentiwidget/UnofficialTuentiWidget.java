@@ -166,9 +166,9 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide);
         if(onlyResized){
             String result[] = {"", "", ""};
-            result[0] = dataMap.get(appWidgetId + "_dataMoney");
-            result[1] = dataMap.get(appWidgetId + "_dataNet");
-            result[2] = dataMap.get(appWidgetId + "_dataPercentage");
+            result[0] = dataMap.get("dataMoney");
+            result[1] = dataMap.get("dataNet");
+            result[2] = dataMap.get("dataPercentage");
             nt.updateRemoteViews(result);
         }else {
             nt.execute(dataMap);

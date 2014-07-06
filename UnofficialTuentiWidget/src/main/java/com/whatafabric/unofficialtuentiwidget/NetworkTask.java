@@ -599,14 +599,14 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     protected void onPostExecute(String[] result) {
         if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute","Begin");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
-        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPostExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
         updateRemoteViews(result);
-
     }
 
     public void updateRemoteViews (String[] result){
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews","Begin");
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
-        if (LOGGING) Log.d("UTuentiW,NetworkTask, onPreExecute","ProgressBar GONE, appWidgetId = " + appWidgetId);
+        if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews","ProgressBar GONE, appWidgetId = " + appWidgetId);
 
         if(result != null){
             if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[0]" + result[0]);
