@@ -33,7 +33,6 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     public static final String UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.UPDATE_WIDGET";
     public static final String FORCE_UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.FORCE_UPDATE_WIDGET";
     public Context context;
-    private static HashMap<Integer, Uri> uris = new HashMap<Integer, Uri>();
     private static int squareSide; //dp in xdpi
 
     @Override
@@ -44,8 +43,8 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         final int N = appWidgetIds.length;
         for (int i=0; i<N; i++) {
             File file = new File(context.getDir("data",
-                                 UnofficialTuentiWidgetConfigureActivity.MODE_PRIVATE),
-                                 UnofficialTuentiWidgetConfigureActivity.FILENAME + "_" + appWidgetIds[i]);
+                    UnofficialTuentiWidgetConfigureActivity.MODE_PRIVATE),
+                    UnofficialTuentiWidgetConfigureActivity.FILENAME + "_" + appWidgetIds[i]);
             if(file.exists()) {
                 updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
             }
@@ -55,12 +54,12 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
 
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        // When the user deletes the widget, delete the preference associated with it.
-        if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onDeleted", "Begin");
+        // When the user deletes the widget, delete the preferences associated with it.
+        if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onEnabled", "Begin");
 
         for (int appWidgetId : appWidgetIds)
         {
-            if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onDeleted", "appWidgetId = " + appWidgetId);
+            if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onEnabled", "Delete appWidgetId = " + appWidgetId);
             UnofficialTuentiWidgetConfigureActivity.deleteData(context, appWidgetId);
             cancelAlarmManager(context, appWidgetId);
         }
@@ -80,6 +79,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onDisabled", "Begin");
+
     }
 
 
@@ -166,19 +166,13 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide);
         if(onlyResized){
             String result[] = {"", "", ""};
-            result[0] = dataMap.get(appWidgetId + "_dataMoney");
-            result[1] = dataMap.get(appWidgetId + "_dataNet");
-            result[2] = dataMap.get(appWidgetId + "_dataPercentage");
+            result[0] = dataMap.get("dataMoney");
+            result[1] = dataMap.get("dataNet");
+            result[2] = dataMap.get("dataPercentage");
             nt.updateRemoteViews(result);
         }else {
             nt.execute(dataMap);
         }
-    }
-
-    public static void addUri(int id, Uri uri)
-    {
-        if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:addUri ","begin");
-        uris.put(new Integer(id), uri);
     }
 
     protected void cancelAlarmManager(Context context, int widgetID)
@@ -190,7 +184,10 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         intentUpdate.setAction(UPDATE_WIDGET);
         //For a global AlarmManager, don't put the uri to cancel
         //all the AlarmManager with action UPDATE_ONE.
-        intentUpdate.setData(uris.get(widgetID));
+        Uri.Builder build = new Uri.Builder();
+        build.appendPath(""+widgetID);
+        Uri uri = build.build();
+        intentUpdate.setData(uri);
         intentUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetID);
         PendingIntent pendingIntentAlarm = PendingIntent.getBroadcast(context,
                 widgetID,
@@ -200,8 +197,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         alarm.cancel(pendingIntentAlarm);
         if (LOGGING) Log.d("UTuentiW,cancelAlarmManager", "Cancelled Alarm. Action = " +
                 UnofficialTuentiWidget.UPDATE_WIDGET +
-                " URI = " + uris.get(widgetID));
-        uris.remove(widgetID);
+                " URI = " + uri.toString());
     }
 }
 

@@ -22,9 +22,9 @@
         <receiver android:name="com.whatafabric.unofficialtuentiwidget.UnofficialTuentiWidget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
                 <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
                 <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED " />
             </intent-filter>
 
             <meta-data
