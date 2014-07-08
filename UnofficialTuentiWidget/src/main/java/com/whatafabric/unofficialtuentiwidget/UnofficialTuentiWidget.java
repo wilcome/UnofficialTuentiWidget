@@ -165,6 +165,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.unofficial_tuenti_widget);
         NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide);
         if(onlyResized){
+            if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:updateAppWidget", "Just rezised (rotation)");
             String result[] = {"", "", ""};
             result[0] = dataMap.get("dataMoney");
             result[1] = dataMap.get("dataNet");
