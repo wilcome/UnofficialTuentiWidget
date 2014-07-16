@@ -136,6 +136,8 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             dataMap.put("dataMoney","0 €");
             dataMap.put("dataNet","");
             dataMap.put("dataPercentage","100");
+            dataMap.put("dataVoiceNet","");
+            dataMap.put("dataVoicePercentage","100");
             dataMap.put("dataBundlePrice",widgetTuBundlePriceText);
             dataMap.put("dataVAT",widgetTuVATText);
 
@@ -186,6 +188,8 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.unofficial_tuenti_widget);
             views.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
             views.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
+            views.setOnClickPendingIntent(R.id.dataVoice,pendingIntentForceUpdate);
+
 
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
@@ -294,6 +298,8 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                 dataMap.put("dataMoney","0 €");
                 dataMap.put("dataNet","0 MB");
                 dataMap.put("dataPercentage","0");
+                dataMap.put("dataVoiceNet","0 MB");
+                dataMap.put("dataVoicePercentage","0");
                 dataMap.put("dataBundlePrice","0");
                 dataMap.put("dataVAT","0.21");
 

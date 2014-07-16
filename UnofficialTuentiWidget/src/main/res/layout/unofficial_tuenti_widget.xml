@@ -18,30 +18,47 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_centerInParent="true">
+        android:layout_centerInParent="true"
+        android:padding="0dp"
+        android:layout_margin="0dp">
         <TextView
             android:id="@+id/dataMoney"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:includeFontPadding="false"
             android:gravity="center"
+            android:layout_gravity="center_vertical"
             android:text="@string/tu_datamoney_string"
             android:textColor="#2998d5"
             android:textStyle="bold"
-            android:textSize="11sp"
+            android:textSize="8sp"
             android:textAlignment="center"
-            android:contentDescription="@string/tu_datamoney_string"/>
+            android:contentDescription="@string/tu_datamoney_string" />
         <TextView
             android:id="@+id/dataNet"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:layout_gravity="center_vertical"
             android:gravity="center"
             android:text="@string/tu_datamegas_string"
             android:textColor="#2998d5"
             android:textStyle="bold"
             android:textSize="10sp"
             android:textAlignment="center"
-            android:layout_margin="0dp"
-            android:contentDescription="@string/tu_datamegas_string"/>
+            android:contentDescription="@string/tu_datamegas_string"
+            android:layout_marginTop="-4dp"
+            android:layout_marginBottom="-4dp" />
+        <TextView
+            android:id="@+id/dataVoice"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center"
+            android:text="@string/tu_datamin_string"
+            android:textColor="#2998d5"
+            android:textStyle="bold"
+            android:textSize="8sp"
+            android:textAlignment="center"
+            android:contentDescription="@string/tu_datamin_string"/>
         </LinearLayout>
 
     <LinearLayout

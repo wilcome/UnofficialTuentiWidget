@@ -163,13 +163,15 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         squareSide = Math.round(dp * (context.getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:updateAppWidget", "dp = " + dp + ", squareSide = " + squareSide);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.unofficial_tuenti_widget);
-        NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide);
+        NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide, onlyResized);
         if(onlyResized){
             if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:updateAppWidget", "Just rezised (rotation)");
-            String result[] = {"", "", ""};
+            String result[] = {"", "", "", "", ""};
             result[0] = dataMap.get("dataMoney");
             result[1] = dataMap.get("dataNet");
             result[2] = dataMap.get("dataPercentage");
+            result[3] = dataMap.get("dataVoiceNet");
+            result[4] = dataMap.get("dataVoicePercentage");
             nt.updateRemoteViews(result);
         }else {
             nt.execute(dataMap);
