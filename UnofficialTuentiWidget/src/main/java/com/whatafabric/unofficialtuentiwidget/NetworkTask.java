@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.SweepGradient;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+
 import javax.net.ssl.HttpsURLConnection;
 
 
@@ -732,11 +734,11 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p1.setAntiAlias(true);
                 p1.setFilterBitmap(true);
                 p1.setDither(true);
-                p1.setColor(Color.parseColor("#2998d5"));//BLUE
+                p1.setColor(Color.parseColor("#2998d5"));//BORDER (BLUE)
                 RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
                 canvas.drawArc (rectF1, 0, 360, true, p1);
 
-                //Data (WHITE + BLUE)
+                //Data
                 Paint p2 = new Paint();
                 p2.setAntiAlias(true);
                 p2.setFilterBitmap(true);
@@ -753,14 +755,20 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p31.setAntiAlias(true);
                 p31.setFilterBitmap(true);
                 p31.setDither(true);
-                p31.setColor(Color.parseColor("#2998d5"));//BLUE
+                //INNER (GREEN-TO-YELLOW)
+                int[] colors_p31 = {Color.GREEN, Color.YELLOW, Color.GREEN};
+                float angle_p31 = (float) (Float.parseFloat(result[2]) * 3.6);
+                float[] positions_p31 = {0, angle_p31/360f, 1};
+                SweepGradient gradient_p31 = new SweepGradient(squareSide/2, squareSide/2, colors_p31 , positions_p31);
+                p31.setShader(gradient_p31);
+                //p31.setColor(Color.parseColor("#2998d5"));
                 RectF rectF31 = new RectF(borderSize / 2,
                                           borderSize / 2,
                                           squareSide - (borderSize / 2),
                                           squareSide - (borderSize / 2));
                 canvas.drawArc(rectF31, 270, (int) (Double.parseDouble(result[2]) * 3.6), true, p31);
 
-                //Voice (WHITE + ORANGE)
+                //Voice
                 Paint p32 = new Paint();
                 p32.setAntiAlias(true);
                 p32.setFilterBitmap(true);
@@ -777,7 +785,13 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p33.setAntiAlias(true);
                 p33.setFilterBitmap(true);
                 p33.setDither(true);
-                p33.setColor(Color.parseColor("#ff9d00"));//ORANGE
+                //INNER (ORANGE-TO-RED)
+                int[] colors_p33 = {Color.MAGENTA, Color.RED, Color.MAGENTA};
+                float angle_p33 = (float) (Float.parseFloat(result[4]) * 3.6);
+                float[] positions_p33 = {0, angle_p33/360f, 1};
+                SweepGradient gradient_p33 = new SweepGradient(squareSide/2, squareSide/2, colors_p33 , positions_p33);
+                p31.setShader(gradient_p33);
+                //p33.setColor(Color.parseColor("#ff9d00"));
                 RectF rectF33 = new RectF(2 * borderSize + innerSize,
                                           2 * borderSize + innerSize,
                                           squareSide-(2 * borderSize + innerSize),
