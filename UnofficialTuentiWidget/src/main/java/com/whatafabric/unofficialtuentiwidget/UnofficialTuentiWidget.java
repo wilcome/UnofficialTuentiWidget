@@ -10,6 +10,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
@@ -163,7 +164,9 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         squareSide = Math.round(dp * (context.getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:updateAppWidget", "dp = " + dp + ", squareSide = " + squareSide);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.unofficial_tuenti_widget);
-        NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide, onlyResized);
+        int orientation = context.getResources().getConfiguration().orientation;
+        boolean landscape = orientation == Configuration.ORIENTATION_LANDSCAPE ? true : false;
+        NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide, landscape);
         if(onlyResized){
             if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:updateAppWidget", "Just rezised (rotation)");
             String result[] = {"", "", "", "", ""};

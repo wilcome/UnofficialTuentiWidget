@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
@@ -75,7 +76,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     private String dataBundlePrice;
     int appWidgetId;
     private static int squareSide;
-    private static boolean onlyResized;
+    private static boolean landscape;
     
 
     public NetworkTask(Context context,
@@ -83,7 +84,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                        AppWidgetManager appWidgetManager,
                        int appWidgetId,
                        int squareSide,
-                       boolean onlyResized){
+                       boolean landscape){
         if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "Begin");
 
         this.context = context;
@@ -92,6 +93,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "appWidgetId = " + appWidgetId + ", squareSide = " + squareSide);
         this.appWidgetId = appWidgetId;
         this.squareSide = squareSide;
+        this.landscape = landscape;
     }
 
     @Override
@@ -672,17 +674,22 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             Canvas canvas = new Canvas(bitmap);
             int borderSize = 0;
             int innerSize = 0;
+            boolean withVoice;
+
             if(result[3]==null) {
                 //Only data info **********************
+                withVoice = false;
 
-                borderSize = (int) (squareSide * 0.03);
-                innerSize = (int) (squareSide * 0.07);
+                //borderSize = (int) (squareSide * 0.03);
+                //innerSize = (int) (squareSide * 0.07);
+                borderSize = (int) (squareSide * 0.02);
+                innerSize = (int) (squareSide * 0.12);
 
                 Paint p1 = new Paint();
                 p1.setAntiAlias(true);
                 p1.setFilterBitmap(true);
                 p1.setDither(true);
-                p1.setColor(Color.parseColor("#2998d5"));
+                p1.setColor(Color.parseColor("#00A5FF"));
                 RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
                 canvas.drawArc (rectF1, 0, 360, true, p1);
 
@@ -698,15 +705,27 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p3.setAntiAlias(true);
                 p3.setFilterBitmap(true);
                 p3.setDither(true);
-                p3.setColor(Color.parseColor("#2998d5"));
-                RectF rectF3 = new RectF(1, 1, squareSide - 1, squareSide - 1);
+
+                int[] colors_p3 = {Color.parseColor("#00A5FF"),
+                                   Color.parseColor("#5AEB00"),
+                                   Color.parseColor("#00A5FF"),
+                                   Color.parseColor("#5AEB00")};
+                float angle_p3 = (float) (Float.parseFloat(result[2]) * 3.6);
+                float[] positions_p3 = {0, (angle_p3/360f) / 2f, angle_p3/360f, 1};
+                SweepGradient gradient_p3 = new SweepGradient(squareSide/2, squareSide/2, colors_p3 , positions_p3);
+                Matrix gm_3 = new Matrix();
+                gradient_p3.getLocalMatrix(gm_3);
+                gm_3.postRotate(-90,squareSide/2, squareSide/2);
+                gradient_p3.setLocalMatrix(gm_3);
+                p3.setShader(gradient_p3);
+                RectF rectF3 = new RectF(borderSize, borderSize, squareSide - borderSize, squareSide - borderSize);
                 canvas.drawArc(rectF3, 270, (int) (Double.parseDouble(result[2]) * 3.6), true, p3);
 
                 Paint p4 = new Paint();
                 p4.setAntiAlias(true);
                 p4.setFilterBitmap(true);
                 p4.setDither(true);
-                p4.setColor(Color.parseColor("#2998d5"));
+                p4.setColor(Color.parseColor("#00A5FF"));
                 RectF rectF4 = new RectF(borderSize + innerSize,
                         borderSize + innerSize,
                         squareSide-(borderSize + innerSize),
@@ -726,7 +745,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
             }else{
                 //Data and Voice **********************
-
+                withVoice = true;
                 borderSize = (int) (squareSide * 0.01);
                 innerSize = (int) (squareSide * 0.06);
 
@@ -734,7 +753,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p1.setAntiAlias(true);
                 p1.setFilterBitmap(true);
                 p1.setDither(true);
-                p1.setColor(Color.parseColor("#2998d5"));//BORDER (BLUE)
+                p1.setColor(Color.parseColor("#00A5FF"));//BORDER (BLUE)
                 RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
                 canvas.drawArc (rectF1, 0, 360, true, p1);
 
@@ -755,13 +774,19 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p31.setAntiAlias(true);
                 p31.setFilterBitmap(true);
                 p31.setDither(true);
-                //INNER (GREEN-TO-YELLOW)
-                int[] colors_p31 = {Color.GREEN, Color.YELLOW, Color.GREEN};
+                //INNER (BLUE-TO-GREEN)
+                int[] colors_p31 = {Color.parseColor("#00A5FF"),
+                                    Color.parseColor("#5AEB00"),
+                                    Color.parseColor("#00A5FF"),
+                                    Color.parseColor("#5AEB00")};
                 float angle_p31 = (float) (Float.parseFloat(result[2]) * 3.6);
-                float[] positions_p31 = {0, angle_p31/360f, 1};
+                float[] positions_p31 = {0, (angle_p31/360f) / 2f, angle_p31/360f, 1};
                 SweepGradient gradient_p31 = new SweepGradient(squareSide/2, squareSide/2, colors_p31 , positions_p31);
+                Matrix gm_31 = new Matrix();
+                gradient_p31.getLocalMatrix(gm_31);
+                gm_31.postRotate(-90,squareSide/2, squareSide/2);
+                gradient_p31.setLocalMatrix(gm_31);
                 p31.setShader(gradient_p31);
-                //p31.setColor(Color.parseColor("#2998d5"));
                 RectF rectF31 = new RectF(borderSize / 2,
                                           borderSize / 2,
                                           squareSide - (borderSize / 2),
@@ -786,12 +811,19 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p33.setFilterBitmap(true);
                 p33.setDither(true);
                 //INNER (ORANGE-TO-RED)
-                int[] colors_p33 = {Color.MAGENTA, Color.RED, Color.MAGENTA};
+                int[] colors_p33 =  {Color.parseColor("#FFC400"),
+                                     Color.parseColor("#FF0095"),
+                                     Color.parseColor("#FFC400"),
+                                     Color.parseColor("#FF0095")};
+
                 float angle_p33 = (float) (Float.parseFloat(result[4]) * 3.6);
-                float[] positions_p33 = {0, angle_p33/360f, 1};
+                float[] positions_p33 = {0, (angle_p33/360f) / 2f, angle_p33/360f, 1};
                 SweepGradient gradient_p33 = new SweepGradient(squareSide/2, squareSide/2, colors_p33 , positions_p33);
-                p31.setShader(gradient_p33);
-                //p33.setColor(Color.parseColor("#ff9d00"));
+                Matrix gm_33 = new Matrix();
+                gradient_p33.getLocalMatrix(gm_33);
+                gm_33.postRotate(-90, squareSide/2, squareSide/2);
+                gradient_p33.setLocalMatrix(gm_33);
+                p33.setShader(gradient_p33);
                 RectF rectF33 = new RectF(2 * borderSize + innerSize,
                                           2 * borderSize + innerSize,
                                           squareSide-(2 * borderSize + innerSize),
@@ -802,7 +834,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p4.setAntiAlias(true);
                 p4.setFilterBitmap(true);
                 p4.setDither(true);
-                p4.setColor(Color.parseColor("#2998d5"));//BLUE
+                p4.setColor(Color.parseColor("#00A5FF"));//BLUE
                 RectF rectF4 = new RectF(3 * borderSize + 2 * innerSize,
                                          3 * borderSize + 2 * innerSize,
                                          squareSide-(3 * borderSize + 2 * innerSize),
@@ -824,15 +856,26 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
             remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
 
-            boolean withVoice;
+
+            //TEXT SECTION
             int moneySize = 0;
             int voiceSize = 0;
+            int refDim;
+            if (withVoice){
+                refDim = innerSize;
+            }else{
+                refDim = innerSize / 2;
+            }
+
 
             if(result[3]!=null && result[3] != "") {
-                withVoice = true;
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     if(result[3].length() != 0) {
-                        voiceSize = (int) ((squareSide - (borderSize * 2 + innerSize * 8)) / result[3].length());
+                        if (landscape){
+                            voiceSize = (int) ((squareSide - (refDim * 10)) / result[3].length());
+                        }else {
+                            voiceSize = (int) ((squareSide - (refDim * 9)) / result[3].length());
+                        }
                     }
                 }
                 remoteViews.setTextViewText(R.id.dataVoice, result[3]);
@@ -840,14 +883,20 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 withVoice = false;
             }
 
-
-
             if(result[0]!=null && result[0] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     if (withVoice == true) {
-                        moneySize = (int) ((squareSide - ( innerSize * 6)) / result[0].length());
+                        if (landscape){
+                            moneySize = (int) ((squareSide - ( refDim * 8)) / result[0].length());
+                        }else {
+                            moneySize = (int) ((squareSide - ( refDim * 5)) / result[0].length());
+                        }
                     }else{
-                        moneySize = (int) ((squareSide - (borderSize * 3 + innerSize * 2)) / result[0].length());
+                        if (landscape){
+                            moneySize = (int) ((squareSide - (refDim * 7)) / result[0].length());
+                        }else {
+                            moneySize = (int) ((squareSide - (refDim * 5)) / result[0].length());
+                        }
                     }
                 }
             }
@@ -892,10 +941,19 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     if(result[1].length() != 0) {
                         int dataSize;
                         if (withVoice == true) {
-                            dataSize = (int) ((squareSide - (borderSize + innerSize * 4)) / result[1].length());
+                            if (landscape){
+                                dataSize = (int) ((squareSide - (refDim * 7)) / result[1].length());
+                            }else {
+                                dataSize = (int) ((squareSide - (refDim * 5)) / result[1].length());
+                            }
                         }else{
-                            dataSize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[1].length());
+                            if (landscape){
+                                dataSize = (int) ((squareSide - (refDim * 6)) / result[1].length());
+                            }else {
+                                dataSize = (int) ((squareSide - (refDim * 5)) / result[1].length());
+                            }
                         }
+
                         if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews", "data size = " + dataSize);
                         remoteViews.setTextViewTextSize(R.id.dataNet, TypedValue.COMPLEX_UNIT_PX, dataSize);
                     }
