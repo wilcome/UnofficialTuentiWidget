@@ -73,13 +73,15 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     private String dataBundlePrice;
     int appWidgetId;
     private static int squareSide;
+    private static boolean onlyResized;
     
 
     public NetworkTask(Context context,
                        RemoteViews remoteViews,
                        AppWidgetManager appWidgetManager,
                        int appWidgetId,
-                       int squareSide){
+                       int squareSide,
+                       boolean onlyResized){
         if (LOGGING) Log.d("UTuentiW,NetworkTask:NetworkTask ", "Begin");
 
         this.context = context;
@@ -116,7 +118,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     protected String[] doInBackground(HashMap<String,String> ... params) {
         if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Begin");
 
-        String result[] = {"", "", ""};
+        String result[] = {"", "", "", "", ""};
 
         HashMap<String, String> dataMap = params[0];
         String user = dataMap.get("user");
@@ -124,6 +126,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         String dataMoney = dataMap.get("dataMoney");
         String dataNet = dataMap.get("dataNet");
         String dataPercentage = dataMap.get("dataPercentage");
+        String dataVoiceNet = dataMap.get("dataVoiceNet");
+        String dataVoicePercentage = dataMap.get("dataVoicePercentage");
         dataBundlePrice = dataMap.get("dataBundlePrice");
         dataVAT = dataMap.get("dataVAT");
 
@@ -136,6 +140,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         result[0] = dataMoney;
         result[1] = dataNet;
         result[2] = dataPercentage;
+        result[3] = dataVoiceNet;
+        result[4] = dataVoicePercentage;
 
         boolean test = false;
         if(!test){
@@ -290,6 +296,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 dataMap.put("dataMoney", result[0]);
                 dataMap.put("dataNet", result[1]);
                 dataMap.put("dataPercentage", result[2]);
+                dataMap.put("dataVoiceNet", result[3]);
+                dataMap.put("dataVoicePercentage", result[4]);
                 UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap, appWidgetId);
 
                 return result;
@@ -464,6 +472,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 dataMap.put("dataMoney", result[0]);
                 dataMap.put("dataNet", result[1]);
                 dataMap.put("dataPercentage", result[2]);
+                dataMap.put("dataVoiceNet", result[3]);
+                dataMap.put("dataVoicePercentage", result[4]);
                 UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap, appWidgetId);
                 return result;
             }
@@ -471,6 +481,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             result[0] = "5 €";
             result[1] = "900 MB";
             result[2] = "90";
+            result[3] = "70m";
+            result[4] = "90";
             return result;
         }
     }
@@ -506,9 +518,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
 
     private String[] extractResult(String sreturned){
-        String result[] = {"","",""};
-
+        String result[] = {"","","","",""};
         if (LOGGING) Log.d("UTuentiW,NetworkTask:doInBackground ", "Some data found! :)");
+
         String consumption = "";
         Pattern pc1 = Pattern.compile("\\\\u20ac\\\\u00a0([0-9]+?\\.[0-9]*)");//Cases:  €0.15
         Matcher mc1 = pc1.matcher(sreturned);
@@ -550,7 +562,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         if (matcherPER.find()) {
             percentage = matcherPER.group(1);
             result[2] = percentage;
-            if (LOGGING) Log.d("UTuentiW,NetworkTask ", percentage + " %");
+            if (LOGGING) Log.d("UTuentiW,NetworkTask data = ", percentage + " %");
 
             //percentage found ... It should exists bundle data
             Pattern patternMB = Pattern.compile("([0-9]{1,3}+)[^0-9]*>MB ");
@@ -564,11 +576,39 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 result[1] = gigasDouble + " GB";
             } else if (matcherMB.find()) {
                 result[1] = matcherMB.group(1) + " MB";
+                if (LOGGING) Log.d("UTuentiW,NetworkTask ","data = " + result[1] + " MB");
             } else {
                 //No bundle
                 result[1] = "";
             }
         }
+
+        if (matcherPER.find()) {
+            percentage = matcherPER.group(1);
+            result[4] = percentage;
+            if (LOGGING) Log.d("UTuentiW,NetworkTask voice = ", percentage + " %");
+
+            //percentage found ... It should exists bundle data
+
+            Pattern patternMB = Pattern.compile("([0-9]{1,3}+)[^0-9]*>min ");
+            Matcher matcherMB = patternMB.matcher(sreturned);
+            if (matcherMB.find()) {
+                result[3] = matcherMB.group(1) + " m";
+                if (LOGGING) Log.d("UTuentiW,NetworkTask ","data = " + matcherMB.group(1) + "min");
+
+            } else {
+                //No bundle
+                result[3] = "";
+            }
+        }else{
+            result[3] = null;
+            result[4] = null;
+        }
+
+
+
+
+
         return result;
     }
 
@@ -612,9 +652,15 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[0]" + result[0]);
             if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[1]" + result[1]);
             if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[2]" + result[2]);
+            if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[3]" + result[3]);
+            if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[4]" + result[4]);
 
             if(result[2]==null){
                 result[2]="100";
+            }
+
+            if(result[4]==null){
+                result[4]="100";
             }
 
             //squareSide = 200;
@@ -622,60 +668,201 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
             Bitmap bitmap = Bitmap.createBitmap(squareSide, squareSide, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
-            int borderSize = (int) (squareSide*0.03);
-            int innerSize = (int) (squareSide*0.07);
+            int borderSize = 0;
+            int innerSize = 0;
+            if(result[3]==null) {
+                //Only data info **********************
 
-            Paint p1 = new Paint();
-            p1.setAntiAlias(true);
-            p1.setFilterBitmap(true);
-            p1.setDither(true);
-            p1.setColor(Color.parseColor("#2998d5"));
-            RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
-            canvas.drawArc (rectF1, 0, 360, true, p1);
+                borderSize = (int) (squareSide * 0.03);
+                innerSize = (int) (squareSide * 0.07);
 
-            Paint p2 = new Paint();
-            p2.setAntiAlias(true);
-            p2.setFilterBitmap(true);
-            p2.setDither(true);
-            p2.setColor(Color.WHITE);
-            RectF rectF2 = new RectF(borderSize, borderSize, squareSide-borderSize, squareSide-borderSize);
-            canvas.drawArc (rectF2, 0, 360, true, p2);
+                Paint p1 = new Paint();
+                p1.setAntiAlias(true);
+                p1.setFilterBitmap(true);
+                p1.setDither(true);
+                p1.setColor(Color.parseColor("#2998d5"));
+                RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
+                canvas.drawArc (rectF1, 0, 360, true, p1);
 
-            Paint p3 = new Paint();
-            p3.setAntiAlias(true);
-            p3.setFilterBitmap(true);
-            p3.setDither(true);
-            p3.setColor(Color.parseColor("#2998d5"));
-            RectF rectF3 = new RectF(1, 1, squareSide-1, squareSide-1);
-            canvas.drawArc (rectF3, 270, (int)(Double.parseDouble(result[2]) * 3.6), true, p3);
+                Paint p2 = new Paint();
+                p2.setAntiAlias(true);
+                p2.setFilterBitmap(true);
+                p2.setDither(true);
+                p2.setColor(Color.WHITE);
+                RectF rectF2 = new RectF(borderSize, borderSize, squareSide-borderSize, squareSide-borderSize);
+                canvas.drawArc (rectF2, 0, 360, true, p2);
 
-            Paint p4 = new Paint();
-            p4.setAntiAlias(true);
-            p4.setFilterBitmap(true);
-            p4.setDither(true);
-            p4.setColor(Color.parseColor("#2998d5"));
-            RectF rectF4 = new RectF(borderSize + innerSize,
-                    borderSize + innerSize,
-                    squareSide-(borderSize + innerSize),
-                    squareSide-(borderSize + innerSize));
-            canvas.drawArc (rectF4, 0, 360, true, p4);
+                Paint p3 = new Paint();
+                p3.setAntiAlias(true);
+                p3.setFilterBitmap(true);
+                p3.setDither(true);
+                p3.setColor(Color.parseColor("#2998d5"));
+                RectF rectF3 = new RectF(1, 1, squareSide - 1, squareSide - 1);
+                canvas.drawArc(rectF3, 270, (int) (Double.parseDouble(result[2]) * 3.6), true, p3);
 
-            Paint p5 = new Paint();
-            p5.setAntiAlias(true);
-            p5.setFilterBitmap(true);
-            p5.setDither(true);
-            p5.setColor(Color.WHITE);
-            RectF rectF5 = new RectF(borderSize * 2 + innerSize,
-                    borderSize * 2 + innerSize,
-                    squareSide-(borderSize * 2 + innerSize),
-                    squareSide-(borderSize * 2 + innerSize));
-            canvas.drawArc (rectF5,  0, 360, true, p5);
+                Paint p4 = new Paint();
+                p4.setAntiAlias(true);
+                p4.setFilterBitmap(true);
+                p4.setDither(true);
+                p4.setColor(Color.parseColor("#2998d5"));
+                RectF rectF4 = new RectF(borderSize + innerSize,
+                        borderSize + innerSize,
+                        squareSide-(borderSize + innerSize),
+                        squareSide-(borderSize + innerSize));
+                canvas.drawArc (rectF4, 0, 360, true, p4);
+
+                Paint p5 = new Paint();
+                p5.setAntiAlias(true);
+                p5.setFilterBitmap(true);
+                p5.setDither(true);
+                p5.setColor(Color.WHITE);
+                RectF rectF5 = new RectF(borderSize * 2 + innerSize,
+                        borderSize * 2 + innerSize,
+                        squareSide-(borderSize * 2 + innerSize),
+                        squareSide-(borderSize * 2 + innerSize));
+                canvas.drawArc (rectF5,  0, 360, true, p5);
+
+            }else{
+                //Data and Voice **********************
+
+                borderSize = (int) (squareSide * 0.01);
+                innerSize = (int) (squareSide * 0.06);
+
+                Paint p1 = new Paint();
+                p1.setAntiAlias(true);
+                p1.setFilterBitmap(true);
+                p1.setDither(true);
+                p1.setColor(Color.parseColor("#2998d5"));//BLUE
+                RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
+                canvas.drawArc (rectF1, 0, 360, true, p1);
+
+                //Data (WHITE + BLUE)
+                Paint p2 = new Paint();
+                p2.setAntiAlias(true);
+                p2.setFilterBitmap(true);
+                p2.setDither(true);
+                p2.setColor(Color.WHITE);
+                RectF rectF2 = new RectF(borderSize,
+                                         borderSize,
+                                         squareSide-borderSize,
+                                         squareSide-borderSize);
+                canvas.drawArc (rectF2, 0, 360, true, p2);
+
+
+                Paint p31 = new Paint();
+                p31.setAntiAlias(true);
+                p31.setFilterBitmap(true);
+                p31.setDither(true);
+                p31.setColor(Color.parseColor("#2998d5"));//BLUE
+                RectF rectF31 = new RectF(borderSize / 2,
+                                          borderSize / 2,
+                                          squareSide - (borderSize / 2),
+                                          squareSide - (borderSize / 2));
+                canvas.drawArc(rectF31, 270, (int) (Double.parseDouble(result[2]) * 3.6), true, p31);
+
+                //Voice (WHITE + ORANGE)
+                Paint p32 = new Paint();
+                p32.setAntiAlias(true);
+                p32.setFilterBitmap(true);
+                p32.setDither(true);
+                p32.setColor(Color.WHITE);
+                RectF rectF32 = new RectF(2 * borderSize + innerSize,
+                                          2 * borderSize + innerSize,
+                                          squareSide-(2 * borderSize + innerSize),
+                                          squareSide-(2 * borderSize + innerSize));
+                canvas.drawArc (rectF32, 0, 360, true, p32);
+
+
+                Paint p33 = new Paint();
+                p33.setAntiAlias(true);
+                p33.setFilterBitmap(true);
+                p33.setDither(true);
+                p33.setColor(Color.parseColor("#ff9d00"));//ORANGE
+                RectF rectF33 = new RectF(2 * borderSize + innerSize,
+                                          2 * borderSize + innerSize,
+                                          squareSide-(2 * borderSize + innerSize),
+                                          squareSide-(2 * borderSize + innerSize));
+                canvas.drawArc(rectF33, 270, (int) (Double.parseDouble(result[4]) * 3.6), true, p33);
+
+                Paint p4 = new Paint();
+                p4.setAntiAlias(true);
+                p4.setFilterBitmap(true);
+                p4.setDither(true);
+                p4.setColor(Color.parseColor("#2998d5"));//BLUE
+                RectF rectF4 = new RectF(3 * borderSize + 2 * innerSize,
+                                         3 * borderSize + 2 * innerSize,
+                                         squareSide-(3 * borderSize + 2 * innerSize),
+                                         squareSide-(3 * borderSize + 2 * innerSize));
+                canvas.drawArc (rectF4, 0, 360, true, p4);
+
+                Paint p5 = new Paint();
+                p5.setAntiAlias(true);
+                p5.setFilterBitmap(true);
+                p5.setDither(true);
+                p5.setColor(Color.WHITE);
+
+                RectF rectF5 = new RectF(4 * borderSize + 2 * innerSize,
+                                         4 * borderSize + 2 * innerSize,
+                                         squareSide-(4 * borderSize + 2 * innerSize),
+                                         squareSide-(4 * borderSize + 2 * innerSize));
+                canvas.drawArc (rectF5,  0, 360, true, p5);
+            }
 
             remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
 
+            boolean withVoice;
+            int moneySize = 0;
+            int voiceSize = 0;
+
+            if(result[3]!=null && result[3] != "") {
+                withVoice = true;
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                    if(result[3].length() != 0) {
+                        voiceSize = (int) ((squareSide - (borderSize * 2 + innerSize * 8)) / result[3].length());
+                    }
+                }
+                remoteViews.setTextViewText(R.id.dataVoice, result[3]);
+            }else{
+                withVoice = false;
+            }
+
+
+
             if(result[0]!=null && result[0] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                    int moneySize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[0].length());
+                    if (withVoice == true) {
+                        moneySize = (int) ((squareSide - ( innerSize * 6)) / result[0].length());
+                    }else{
+                        moneySize = (int) ((squareSide - (borderSize * 3 + innerSize * 2)) / result[0].length());
+                    }
+                }
+            }
+
+            if(withVoice) {
+                if (voiceSize < moneySize) {
+                    moneySize = voiceSize;
+                } else {
+                    voiceSize = moneySize;
+                }
+            }
+
+            if(withVoice){
+                remoteViews.setViewVisibility(R.id.dataVoice, View.VISIBLE);
+
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                    if(result[3].length() != 0) {
+                        if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews", "min size = " + voiceSize);
+                        remoteViews.setTextViewTextSize(R.id.dataVoice, TypedValue.COMPLEX_UNIT_PX, voiceSize);
+                    }
+                }
+                remoteViews.setTextViewText(R.id.dataVoice, result[3]);
+            }else{
+                remoteViews.setViewVisibility(R.id.dataVoice, View.GONE);
+            }
+
+
+            if(result[0]!=null && result[0] != "") {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     remoteViews.setTextViewTextSize(R.id.dataMoney, TypedValue.COMPLEX_UNIT_PX, moneySize);
                     if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews", "money size = " + moneySize);
                 }
@@ -685,10 +872,16 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             }
 
 
+
             if(result[1]!=null && result[1] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     if(result[1].length() != 0) {
-                        int dataSize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[1].length());
+                        int dataSize;
+                        if (withVoice == true) {
+                            dataSize = (int) ((squareSide - (borderSize + innerSize * 4)) / result[1].length());
+                        }else{
+                            dataSize = (int) ((squareSide - (borderSize * 4 + innerSize * 2)) / result[1].length());
+                        }
                         if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews", "data size = " + dataSize);
                         remoteViews.setTextViewTextSize(R.id.dataNet, TypedValue.COMPLEX_UNIT_PX, dataSize);
                     }
@@ -697,6 +890,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             }else{
                 remoteViews.setTextViewText(R.id.dataNet, context.getString(R.string.nobundle));
             }
+
 
 
             //Create another intent for the case in which we push the widget
@@ -710,7 +904,9 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
             remoteViews.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
             remoteViews.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
-
+            if(result[3]!=null) {
+                remoteViews.setOnClickPendingIntent(R.id.dataVoice, pendingIntentForceUpdate);
+            }
 
             // Instruct the widget manager to update the widget
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
