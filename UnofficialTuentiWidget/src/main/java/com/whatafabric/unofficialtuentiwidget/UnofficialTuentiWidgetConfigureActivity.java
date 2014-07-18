@@ -237,6 +237,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
         File oldFile = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
         if (oldFile.exists()){
 
+
             try {
                 HashMap<String, String> oldDataMap;
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "old file exists.");
