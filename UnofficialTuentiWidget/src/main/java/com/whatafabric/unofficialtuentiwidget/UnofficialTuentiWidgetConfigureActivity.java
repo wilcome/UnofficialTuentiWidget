@@ -236,16 +236,17 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
 
         File oldFile = new File(context.getDir("data", MODE_PRIVATE), FILENAME);
         if (oldFile.exists()){
-            oldFile.delete();
-            /*
+
             try {
                 HashMap<String, String> oldDataMap;
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "old file exists.");
                 FileInputStream oldFis = new FileInputStream(oldFile);
                 ObjectInputStream oldOis = new ObjectInputStream(oldFis);
+                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "after streams");
 
                 oldDataMap = (HashMap<String, String>) oldOis.readObject();
                 HashMap<String, String> newDataMap = new HashMap<String, String>();
+                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "Before the for");
                 for (HashMap.Entry<String, String> entry : oldDataMap.entrySet()) {
                     if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "Inside for of old hashMap");
 
@@ -253,13 +254,13 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", entry.getKey() + "/" + entry.getValue());
 
                     if (entry.getValue() != null) {
-                        newDataMap.put(entry.getKey().substring('_'), entry.getValue());
+                        if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "trying to extract value!");
+                        String key = entry.getKey().substring(entry.getKey().indexOf('_')+1);
+                        if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "value extracted=" + key);
+                        newDataMap.put(key, entry.getValue());
                     } else {
                         if (LOGGING) Log.d("UnofficialTuentiWidgetConfigureActivity:saveData BUG UNSOLVED: ", entry.getKey() + "/" + entry.getValue());
                     }
-                    if (!entry.getKey().contains("password"))
-                        if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:saveData ", entry.getKey() + "/" + entry.getValue());
-
                 }
                 try {
                     if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidgetConfigureActivity:loadData ", "Trying to create new file.");
@@ -278,7 +279,7 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
-            }*/
+            }
         }
 
 

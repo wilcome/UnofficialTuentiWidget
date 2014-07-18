@@ -42,11 +42,21 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "begin");
         this.context = context;
         final int N = appWidgetIds.length;
+        boolean noFile = true;
         for (int i=0; i<N; i++) {
             File file = new File(context.getDir("data",
                     UnofficialTuentiWidgetConfigureActivity.MODE_PRIVATE),
                     UnofficialTuentiWidgetConfigureActivity.FILENAME + "_" + appWidgetIds[i]);
             if(file.exists()) {
+                noFile = false;
+                updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
+            }
+        }
+
+        if(noFile){
+            for (int i=0; i<N; i++) {
+                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "noNewFile case - appWidgetId = " + appWidgetIds[i]);
+                UnofficialTuentiWidgetConfigureActivity.loadData(context, appWidgetIds[i]);
                 updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
             }
         }
