@@ -65,7 +65,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
-    private static boolean LOGGING = true;
+    private static boolean LOGGING = false;
     private static int SLEEPING_TIME = 1000; //in miliseconds
     private static int COUNT_LIMIT = 5; //in miliseconds
 
@@ -519,7 +519,6 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             e.printStackTrace();
         }
     }
-
 
     private String[] extractResult(String sreturned){
         String result[] = {"","","","",""};

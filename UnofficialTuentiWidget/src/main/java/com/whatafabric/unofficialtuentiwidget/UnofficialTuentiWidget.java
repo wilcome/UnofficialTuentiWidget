@@ -15,6 +15,7 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -30,7 +31,7 @@ import java.util.HashMap;
  * App Widget Configuration implemented in {@link UnofficialTuentiWidgetConfigureActivity UnofficialTuentiWidgetConfigureActivity}
  */
 public class UnofficialTuentiWidget extends AppWidgetProvider {
-    private static boolean LOGGING = true;
+    private static boolean LOGGING = false;
     public static final String UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.UPDATE_WIDGET";
     public static final String FORCE_UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.FORCE_UPDATE_WIDGET";
     public Context context;
@@ -42,25 +43,19 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "begin");
         this.context = context;
         final int N = appWidgetIds.length;
-        boolean noFile = true;
         for (int i=0; i<N; i++) {
             File file = new File(context.getDir("data",
                     UnofficialTuentiWidgetConfigureActivity.MODE_PRIVATE),
                     UnofficialTuentiWidgetConfigureActivity.FILENAME + "_" + appWidgetIds[i]);
-            if(file.exists()) {
-                noFile = false;
-                updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
-            }
-        }
-
-        if(noFile){
-            for (int i=0; i<N; i++) {
+            if(!file.exists()) {
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "noNewFile case - appWidgetId = " + appWidgetIds[i]);
+                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "Remove old alarm and create the new one.");
+                cancelAlarmManager(context,appWidgetIds[i]);
+                createNewAlarm(context,appWidgetIds[i]);
                 UnofficialTuentiWidgetConfigureActivity.loadData(context, appWidgetIds[i]);
-                updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
             }
+            updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
         }
-
     }
 
     @Override
@@ -191,7 +186,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         }
     }
 
-    protected void cancelAlarmManager(Context context, int widgetID)
+    protected void cancelAlarmManager(Context context, int widgetId)
     {
         if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:cancelAlarmManager ","begin");
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -201,12 +196,12 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         //For a global AlarmManager, don't put the uri to cancel
         //all the AlarmManager with action UPDATE_ONE.
         Uri.Builder build = new Uri.Builder();
-        build.appendPath(""+widgetID);
+        build.appendPath(""+widgetId);
         Uri uri = build.build();
         intentUpdate.setData(uri);
-        intentUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetID);
+        intentUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
         PendingIntent pendingIntentAlarm = PendingIntent.getBroadcast(context,
-                widgetID,
+                widgetId,
                 intentUpdate,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -214,6 +209,30 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         if (LOGGING) Log.d("UTuentiW,cancelAlarmManager", "Cancelled Alarm. Action = " +
                 UnofficialTuentiWidget.UPDATE_WIDGET +
                 " URI = " + uri.toString());
+    }
+
+
+    public void createNewAlarm(Context context, int widgetId){
+        // New intent for AlarmManager
+        Intent intentUpdateNew = new Intent(context, UnofficialTuentiWidget.class);
+        Uri.Builder build = new Uri.Builder();
+        build.appendPath(""+widgetId);
+        Uri uri = build.build();
+        intentUpdateNew.setAction(UnofficialTuentiWidget.UPDATE_WIDGET);//Set an action anyway to filter it in onReceive()
+        intentUpdateNew.setData(uri);//One Alarm per instance.
+        //We will need the exact instance to identify the intent.
+        intentUpdateNew.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        PendingIntent pendingIntentAlarmNew = PendingIntent.getBroadcast(context,
+                                                                         widgetId,
+                                                                         intentUpdateNew,
+                                                                         PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //Custom alarm that will update only when the system lets us do it.
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime()+(UnofficialTuentiWidgetConfigureActivity.seconds*1000),
+                (UnofficialTuentiWidgetConfigureActivity.seconds*1000),
+                pendingIntentAlarmNew);
     }
 }
 
