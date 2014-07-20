@@ -37,6 +37,7 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
     public Context context;
     private static int squareSide; //dp in xdpi
 
+
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
@@ -51,9 +52,9 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "noNewFile case - appWidgetId = " + appWidgetIds[i]);
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onUpdate ", "Remove old alarm and create the new one.");
                 cancelAlarmManager(context,appWidgetIds[i]);
-                createNewAlarm(context,appWidgetIds[i]);
                 UnofficialTuentiWidgetConfigureActivity.loadData(context, appWidgetIds[i]);
             }
+            createNewAlarm(context,appWidgetIds[i]);
             updateAppWidget(context, appWidgetManager, appWidgetIds[i], false);
         }
     }
@@ -129,7 +130,10 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
                 if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onReceive", "kernel update");
                 this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetId});
             }else if(action.equals(AppWidgetManager.EXTRA_APPWIDGET_ID)){
-                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onReceive", "other update ?¿");
+                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onReceive", "other update EXTRA_APPWIDGET_ID");
+                this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetId});
+            }else if(action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)){
+                if (LOGGING) Log.d("UTuentiW,UnofficialTuentiWidget:onReceive", "other update ACTION_APPWIDGET_UPDATE");
                 this.onUpdate(context, AppWidgetManager.getInstance(context), new int[]{widgetId});
             }
         }
