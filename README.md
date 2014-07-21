@@ -1,17 +1,16 @@
 UnofficialTuentiWidget
 ======================
 
-![alt tag](http://i.imgur.com/B8rwtxz.png)
+![alt tag](http://i.imgur.com/JnzboOi.png)
 
 Unofficial Tuenti widget that shows your personal account data of Tuenti Movil.
 
-
-    AlarmManager updates (more efficient).
-    Force update when clicking on the widget.
-    Variable annulus based on the percentage info received.
-    The user login and password are stored in a private file only accessible if you have root access.
-    The access is done by simulating a desktop firefox browser.
-    Just tested with a couple accounts (both contract) :'(.
+    * Añadido soporte para bono de llamadas (gracias a B.Curero por sus trazas)
+    * Cambiado el aspecto del icono añadiendo gradiente de color y color de textos.
+    * Cambiada la lógica del tamaño del texto interior.
+    * Cambiada el tipo de alarma.
+    * Modificado el guardado de datos.
+    * Cambiado el icono de la app.
     
 ## License
 
