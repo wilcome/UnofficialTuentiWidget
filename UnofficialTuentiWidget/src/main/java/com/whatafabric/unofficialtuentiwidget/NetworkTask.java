@@ -482,11 +482,11 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 return result;
             }
         }else{
-            result[0] = "5 €";
-            result[1] = "900 MB";
-            result[2] = "90";
-            result[3] = "70m";
-            result[4] = "90";
+            result[0] = "16.8 €";
+            result[1] = "1 GB";
+            result[2] = "100";
+            result[3] = "30m";
+            result[4] = "100";
             return result;
         }
     }
@@ -651,7 +651,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         remoteViews.setViewVisibility(R.id.ProgressBarLayout, View.GONE);
         if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews","ProgressBar GONE, appWidgetId = " + appWidgetId);
 
-        if(result != null){
+        if(result != null || !result[0].equals("") || !result[1].equals("") || !result[2].equals("")){
             if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[0]" + result[0]);
             if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[1]" + result[1]);
             if (LOGGING) Log.d("UTuentiW,NetworkTask, updateRemoteViews ","result[2]" + result[2]);
@@ -675,7 +675,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             int innerSize = 0;
             boolean withVoice;
 
-            if(result[3]==null) {
+            if(result[3]=="0 m") {
                 //Only data info **********************
                 withVoice = false;
 
@@ -852,6 +852,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                                          squareSide-(4 * borderSize + 2 * innerSize));
                 canvas.drawArc (rectF5,  0, 360, true, p5);
             }
+
 
             remoteViews.setImageViewBitmap(R.id.annulus, bitmap);
 
