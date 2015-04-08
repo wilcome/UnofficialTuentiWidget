@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/home/egorive/Android/Sdk/extras/android/m2repository/com/android/support/support-v4/19.1.0/support-v4-19.1.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="85f201b380937e61a9dce6ca90ccf6872abbfb67">
+        <dex dex="/home/egorive/AndroidStudioProjects/UnofficialTuentiWidget/build/intermediates/pre-dexed/debug/support-v4-19.1.0-f9d38945a53614b28c2915c2387b41cebefa8546.jar" />
+    </item>
+    <item
+        jar="/home/egorive/AndroidStudioProjects/UnofficialTuentiWidget/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="3499ceba05ca1f6037c6a2fad73df8f636224a28">
+        <dex dex="/home/egorive/AndroidStudioProjects/UnofficialTuentiWidget/build/intermediates/pre-dexed/debug/classes-41ec5d6ffbd7b72e42c0b0f964bdace450e6fa4b.jar" />
+    </item>
+
+</items>
