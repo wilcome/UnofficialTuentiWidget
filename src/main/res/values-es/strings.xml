@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">UnofficialTuentiWidget</string>
+    <string name="tu_user_string">user</string>
+    <string name="tu_password_string">password</string>
+    <string name="tu_datamoney_string">0 €</string>
+    <string name="tu_datamegas_string">0 MB</string>
+    <string name="tu_datamin_string">0m</string>
+    <string name="tu_datadays_string">0d</string>
+
+    <string name="configure">Configuración</string>
+    <string name="user">usuario: </string>
+    <string name="password">contraseña: </string>
+    <string name="create_widget">Crear widget</string>
+    <string name="data_not_found">Info\nno\nencontrada</string>
+    <string name="nobundle">!Bono</string>
+    <string name="add_bundle_price_cb">Precio del bono (con iva): </string>
+    <string name="vat">IVA</string>
+    <string name="loading">argando...</string>
+    <string name="postpaid">contrato (datos por defecto)</string>
+
+</resources>
