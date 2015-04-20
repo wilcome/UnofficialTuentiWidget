@@ -31,7 +31,7 @@ import java.util.HashMap;
  * App Widget Configuration implemented in {@link UnofficialTuentiWidgetConfigureActivity UnofficialTuentiWidgetConfigureActivity}
  */
 public class UnofficialTuentiWidget extends AppWidgetProvider {
-    private static boolean LOGGING = false;
+    private static boolean LOGGING = true;
     private static final String TAG = "UnofficialTuentiWidget";
     public static final String UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.UPDATE_WIDGET";
     public static final String FORCE_UPDATE_WIDGET = "com.whatafabric.unofficialtuentiwidget.FORCE_UPDATE_WIDGET";

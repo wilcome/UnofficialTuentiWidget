@@ -65,7 +65,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
-    private static boolean LOGGING = false;
+    private static boolean LOGGING = true;
     private static final String TAG = "NetworkTask";
     private static int SLEEPING_TIME = 1000; //in miliseconds
     private static int COUNT_LIMIT = 5; //in miliseconds
@@ -285,7 +285,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                             if (LOGGING) Log.d(TAG, "data not found. :'(");
                             return result;
                         }
-                        result = extractResult(sreturned);
+                        result = extractResult(sreturned, result);
 
                     } catch (MalformedURLException e) {
                         if (LOGGING) Log.e(TAG, "Error MalformedURLException");
@@ -297,6 +297,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         return result;
                     } catch (IOException e) {
                         if (LOGGING) Log.e(TAG, "Error IOException");
+                        e.printStackTrace();
+                        return result;
+                    } catch (Exception e){
+                        if (LOGGING) Log.e(TAG, "Error Exception");
                         e.printStackTrace();
                         return result;
                     }
@@ -313,7 +317,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap, appWidgetId);
 
                 return result;
-            }else {
+            }else {//Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO
                 try {
                     // Create a local instance of cookie store
                     BasicCookieStore cookieStore =  new BasicCookieStore();
@@ -336,6 +340,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
                     httpGet.setHeader("Referer", "https://www.tuenti.com/?gotHash=1");
                     httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                    httpGet.setParams(httpParameters);
 
                     AndroidHttpClient httpClient = AndroidHttpClient.newInstance("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
                     HttpResponse response = httpClient.execute(httpGet,localContext);
@@ -381,7 +386,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     nameValuePairs.add(new BasicNameValuePair("input_password", password));
                     nameValuePairs.add(new BasicNameValuePair("csfr", csrf));
                     httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
+                    httpPost.setParams(httpParameters);
                     httpPost.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.NETSCAPE);
 
                     response = httpClient.execute(httpPost,localContext);
@@ -407,7 +412,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                     httpGet.setHeader("Referer", "https://www.tuenti.com/?m=Login");
                     httpGet.setHeader("Connection", "Keep-alive");
                     httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
+                    httpGet.setParams(httpParameters);
 
                     response = httpClient.execute(httpGet,localContext);
                     entity = response.getEntity();
@@ -439,6 +444,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         httpGet.setHeader("Referer", "https://www.tuenti.com/?m=Login");
                         httpGet.setHeader("Connection", "Keep-alive");
                         httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                        httpGet.setParams(httpParameters);
 
                         response = httpClient.execute(httpGet,localContext);
                         entity = response.getEntity();
@@ -468,16 +474,22 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         return result;
                     }
 
-                    result = extractResult(sreturned);
+                    result = extractResult(sreturned, result);
 
                     httpClient.close();
 
                 }catch(IOException e){
                     if (LOGGING) Log.e(TAG, "Error IOException");
                     e.printStackTrace();
+                    return result;
                 }catch(InterruptedException e){
                     if (LOGGING) Log.e(TAG, "Error IOException");
                     e.printStackTrace();
+                    return result;
+                } catch (Exception e){
+                    if (LOGGING) Log.e(TAG, "Error Exception");
+                    e.printStackTrace();
+                    return result;
                 }
 
                 //Before finish store the results in the Map
@@ -534,8 +546,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         }
     }
 
-    private String[] extractResult(String sreturned){
-        String result[] = {"","","","","","",""};
+    private String[] extractResult(String sreturned, String[] oldResult){
+        String result[] = oldResult;
         if (LOGGING) Log.d(TAG, "Some data found! :)");
 
         String consumption = "";
@@ -560,10 +572,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         } else if (mc4.find()) {
             if (LOGGING) Log.d(TAG, "group4 = " + mc4.group(1));
             consumption = mc4.group(1);
-        } else {
+        } /*
+            keep the old one
+        else {
             //No money
             result[0] = "badAccount";
-        }
+        }*/
 
         consumption = consumption.replace(',', '.');
         double consumptionDouble = (double) Math.round(((Double.parseDouble(consumption) *
@@ -588,9 +602,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             if (daysMatcher.find()) {
                 if (LOGGING) Log.d(TAG, "days = " + daysMatcher.group(1));
                 result[5] = daysMatcher.group(1) + " d";;
-            }else{
-                result[5]="";
             }
+            /*
+            keep the old one
+            else{
+                result[5]="";
+            }*/
         }
 
         if (matcherPER.find()) {
@@ -612,10 +629,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             } else if (matcherMB.find()) {
                 result[1] = matcherMB.group(1) + " MB";
                 if (LOGGING) Log.d(TAG,"data = " + result[1] + " MB");
-            } else {
+            } /*
+              keep the old one
+               else {
                 //No bundle
                 result[1] = "";
-            }
+            }*/
         }
 
         if (matcherPER.find()) {
@@ -631,10 +650,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 result[3] = matcherMin.group(1) + " m";
                 if (LOGGING) Log.d(TAG,"data = " + matcherMin.group(1) + "min");
 
-            } else {
+            } /*
+            keep the old one
+            else {
                 //No bundle
                 result[3] = "";
-            }
+            }*/
         }else{
             result[3] = null;
             result[4] = null;

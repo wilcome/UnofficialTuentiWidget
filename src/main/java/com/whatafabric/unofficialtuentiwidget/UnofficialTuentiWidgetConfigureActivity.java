@@ -33,7 +33,7 @@ import java.util.HashMap;
  * The configuration screen for the {@link UnofficialTuentiWidget UnofficialTuentiWidget} AppWidget.
  */
 public class UnofficialTuentiWidgetConfigureActivity extends Activity {
-    private static boolean LOGGING = false;
+    private static boolean LOGGING = true;
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     EditText tuUserText;
     EditText tuPasswordText;
