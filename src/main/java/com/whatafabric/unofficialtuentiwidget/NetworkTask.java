@@ -52,6 +52,7 @@ import java.io.PrintWriter;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -65,10 +66,11 @@ import javax.net.ssl.HttpsURLConnection;
 
 
 public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[]> {
-    private static boolean LOGGING = true;
-    private static final String TAG = "NetworkTask";
+    private static boolean LOGGING = false;
+    private static final String TAG = "UTW";
     private static int SLEEPING_TIME = 1000; //in miliseconds
     private static int COUNT_LIMIT = 5; //in miliseconds
+    private static int CONNECTION_TIMEOUT = 5000; //in miliseconds
 
     private Context context;
     private RemoteViews remoteViews;
@@ -169,6 +171,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         urlConnection.setRequestProperty("Referer", "https://www.tuenti.com/?gotHash=1");
                         urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
                         urlConnection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                        urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+                        urlConnection.setReadTimeout(CONNECTION_TIMEOUT);
 
                         InputStream in = urlConnection.getInputStream();
                         InputStreamReader isr = new InputStreamReader(in);
@@ -205,6 +209,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0");
                         urlConnection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
                         urlConnection.setRequestProperty("Referer", "https://www.tuenti.com/?m=Login");
+                        urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+                        urlConnection.setReadTimeout(CONNECTION_TIMEOUT);
                         urlConnection.setRequestMethod("POST");
                         urlConnection.setDoInput(true);
                         urlConnection.setDoOutput(true);
@@ -231,6 +237,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         urlConnection.setRequestProperty("Referer", "https://www.tuenti.com/?m=Login");
                         urlConnection.setRequestProperty("Connection", "Keep-alive");
                         urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                        urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+                        urlConnection.setReadTimeout(CONNECTION_TIMEOUT);
                         in = urlConnection.getInputStream();
 
                         if ("gzip".equals(urlConnection.getContentEncoding())) {
@@ -258,6 +266,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                             urlConnection.setRequestProperty("Referer", "https://www.tuenti.com/?m=Login");
                             urlConnection.setRequestProperty("Connection", "Keep-alive");
                             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                            urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+                            urlConnection.setReadTimeout(CONNECTION_TIMEOUT);
                             in = urlConnection.getInputStream();
 
                             if ("gzip".equals(urlConnection.getContentEncoding())) {
@@ -287,6 +297,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                         }
                         result = extractResult(sreturned, result);
 
+                    } catch (SocketTimeoutException e) {
+                        if (LOGGING) Log.e(TAG, "Error SocketTimeoutException");
+                        e.printStackTrace();
+                        return result;
                     } catch (MalformedURLException e) {
                         if (LOGGING) Log.e(TAG, "Error MalformedURLException");
                         e.printStackTrace();
