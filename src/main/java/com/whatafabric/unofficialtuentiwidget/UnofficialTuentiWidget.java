@@ -182,14 +182,16 @@ public class UnofficialTuentiWidget extends AppWidgetProvider {
         NetworkTask nt = new NetworkTask(context,views,appWidgetManager,appWidgetId, squareSide, landscape);
         if(onlyResized){
             if (LOGGING) Log.d(TAG, "Just rezised (rotation)");
-            String result[] = {"", "", "", "", "", "", ""};
+            String result[] = {"", "", "", "", "", "", "", "", ""};
             result[0] = dataMap.get("dataMoney");
             result[1] = dataMap.get("dataNet");
             result[2] = dataMap.get("dataPercentage");
-            result[3] = dataMap.get("dataVoiceNet");
-            result[4] = dataMap.get("dataVoicePercentage");
+            result[3] = dataMap.get("dataDigitalVoice");
+            result[4] = dataMap.get("dataDigitalVoicePercentage");
             result[5] = dataMap.get("dataDays");
             result[6] = dataMap.get("dataDaysPercentage");
+            result[7] = dataMap.get("dataVoice");
+            result[8] = dataMap.get("dataVoicePercentage");
             nt.updateRemoteViews(result);
         }else {
             nt.execute(dataMap);

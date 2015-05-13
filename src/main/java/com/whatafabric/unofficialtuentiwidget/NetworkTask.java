@@ -61,7 +61,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
 import javax.net.ssl.HttpsURLConnection;
 
 
@@ -80,6 +79,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     int appWidgetId;
     private static int squareSide;
     private static boolean landscape;
+    private static int perCount = 4;
     
 
     public NetworkTask(Context context,
@@ -125,7 +125,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
     protected String[] doInBackground(HashMap<String,String> ... params) {
         if (LOGGING) Log.d(TAG, "Begin");
 
-        String result[] = {"", "", "", "", "", "", ""};
+        String result[] = {"", "", "", "", "", "", "", "", ""};
 
         HashMap<String, String> dataMap = params[0];
         String user = dataMap.get("user");
@@ -133,10 +133,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         String dataMoney = dataMap.get("dataMoney");
         String dataNet = dataMap.get("dataNet");
         String dataPercentage = dataMap.get("dataPercentage");
-        String dataVoiceNet = dataMap.get("dataVoiceNet");
-        String dataVoicePercentage = dataMap.get("dataVoicePercentage");
+        String dataDigitalVoice = dataMap.get("dataDigitalVoice");
+        String dataDigitalVoicePercentage = dataMap.get("dataDigitalVoicePercentage");
         String dataDays = dataMap.get("dataDays");
         String dataDaysPercentage = dataMap.get("dataDaysPercentage");
+        String dataVoice = dataMap.get("dataVoice");
+        String dataVoicePercentage = dataMap.get("dataVoicePercentage");
 
         dataBundlePrice = dataMap.get("dataBundlePrice");
         dataVAT = dataMap.get("dataVAT");
@@ -150,10 +152,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         result[0] = dataMoney;
         result[1] = dataNet;
         result[2] = dataPercentage;
-        result[3] = dataVoiceNet;
-        result[4] = dataVoicePercentage;
+        result[3] = dataDigitalVoice;
+        result[4] = dataDigitalVoicePercentage;
         result[5] = dataDays;
         result[6] = dataDaysPercentage;
+        result[7] = dataVoice;
+        result[8] = dataVoicePercentage;
 
         boolean test = false;
         if(!test){
@@ -295,6 +299,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                             if (LOGGING) Log.d(TAG, "data not found. :'(");
                             return result;
                         }
+
                         result = extractResult(sreturned, result);
 
                     } catch (SocketTimeoutException e) {
@@ -324,10 +329,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 dataMap.put("dataMoney", result[0]);
                 dataMap.put("dataNet", result[1]);
                 dataMap.put("dataPercentage", result[2]);
-                dataMap.put("dataVoiceNet", result[3]);
-                dataMap.put("dataVoicePercentage", result[4]);
+                dataMap.put("dataDigitalVoice", result[3]);
+                dataMap.put("dataDigitalVoicePercentage", result[4]);
                 dataMap.put("dataDays", result[5]);
                 dataMap.put("dataDaysPercentage", result[6]);
+                dataMap.put("dataVoice", result[7]);
+                dataMap.put("dataVoicePercentage", result[8]);
                 UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap, appWidgetId);
 
                 return result;
@@ -514,6 +521,8 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 dataMap.put("dataVoicePercentage", result[4]);
                 dataMap.put("dataDays", result[5]);
                 dataMap.put("dataDaysPercentage", result[6]);
+                dataMap.put("voiceNet", result[7]);
+                dataMap.put("voicePercentage", result[8]);
                 UnofficialTuentiWidgetConfigureActivity.saveData(context, dataMap, appWidgetId);
                 return result;
             }
@@ -521,10 +530,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             result[0] = "16.8 €";
             result[1] = "1 GB";
             result[2] = "100";
-            result[3] = "30m";
+            result[3] = "30m VD";
             result[4] = "100";
             result[5] = "20d";
             result[6] = "100";
+            result[7] = "30m";
+            result[8] = "100";
             return result;
         }
     }
@@ -586,12 +597,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         } else if (mc4.find()) {
             if (LOGGING) Log.d(TAG, "group4 = " + mc4.group(1));
             consumption = mc4.group(1);
-        } /*
-            keep the old one
-        else {
-            //No money
-            result[0] = "badAccount";
-        }*/
+        }
 
         consumption = consumption.replace(',', '.');
         double consumptionDouble = (double) Math.round(((Double.parseDouble(consumption) *
@@ -603,6 +609,12 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
         String percentage = "";
         Pattern patternPER = Pattern.compile("percentage\\\":(\\d+).?");
         Matcher matcherPER = patternPER.matcher(sreturned);
+        Matcher matcherCounter = patternPER.matcher(sreturned);
+
+        perCount = 0;
+        while (matcherCounter.find()){
+            perCount++;
+        }
 
 
         if (matcherPER.find()) {
@@ -610,28 +622,20 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             result[6] = percentage;//percentage of the month consumed
             if (LOGGING) Log.d(TAG, percentage + " %");
             //percentage found ... It must be the percentage (in days of a month) of the plan left
-            Pattern daysPattern = Pattern.compile("([0-9]{1,2}+)\\D*d\\\\u00edas");
+            Pattern daysPattern = Pattern.compile("([0-9]{1,2}+)\\D*d\\\\u00eda");
             Matcher daysMatcher = daysPattern.matcher(sreturned);
 
             if (daysMatcher.find()) {
                 if (LOGGING) Log.d(TAG, "days = " + daysMatcher.group(1));
                 result[5] = daysMatcher.group(1) + " d";;
             }
-            /*
-            keep the old one
-            else{
-                result[5]="";
-            }*/
         }
+
 
         if (matcherPER.find()) {
             percentage = matcherPER.group(1);
             result[2] = percentage;
             if (LOGGING) Log.d(TAG, percentage + " %");
-
-            //second percentage found ... It should exists bundle data
-            //Pattern patternMB = Pattern.compile("([0-9]{1,3}+)[^0-9]*>MB ");
-            //Pattern patternGB = Pattern.compile("([0-9]{1,2}+)\\.([0-9]{3}+)[^0-9]*>MB ");
             Pattern patternMB = Pattern.compile("\\D([0-9]{1,3}+)\\D*MB");
             Pattern patternGB = Pattern.compile("([0-9]{4}+)\\D*MB");
             Matcher matcherMB = patternMB.matcher(sreturned);
@@ -643,41 +647,47 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             } else if (matcherMB.find()) {
                 result[1] = matcherMB.group(1) + " MB";
                 if (LOGGING) Log.d(TAG,"data = " + result[1] + " MB");
-            } /*
-              keep the old one
-               else {
-                //No bundle
-                result[1] = "";
-            }*/
+            }
+        }
+
+        if(perCount == 5){
+            if (matcherPER.find()) {
+                percentage = matcherPER.group(1);
+                result[8] = percentage;
+                if (LOGGING) Log.d(TAG, "NetworkTask voice = " + percentage + " %");
+
+                //percentage found ... It should exists voice data
+                Pattern patternMin = Pattern.compile("([0-9]{1,3}+)[^0-9]*>min<");
+                Matcher matcherMin = patternMin.matcher(sreturned);
+                if (matcherMin.find()) {
+                    result[7] = matcherMin.group(1) + "m";
+                    if (LOGGING) Log.d(TAG,"data = " + matcherMin.group(1) + "min");
+
+                }
+            }else{
+                result[7] = null;
+                result[8] = null;
+            }
         }
 
         if (matcherPER.find()) {
             percentage = matcherPER.group(1);
             result[4] = percentage;
-            if (LOGGING) Log.d("UTuentiW,NetworkTask voice = ", percentage + " %");
+            if (LOGGING) Log.d(TAG, "NetworkTask digital voice = " + percentage + " %");
 
             //percentage found ... It should exists bundle data
 
             Pattern patternMin = Pattern.compile("([0-9]{1,3}+)[^0-9]*>min ");
             Matcher matcherMin = patternMin.matcher(sreturned);
             if (matcherMin.find()) {
-                result[3] = matcherMin.group(1) + " m";
-                if (LOGGING) Log.d(TAG,"data = " + matcherMin.group(1) + "min");
+                result[3] = matcherMin.group(1) + "m VD";
+                if (LOGGING) Log.d(TAG,"data = " + matcherMin.group(1) + " m VD");
 
-            } /*
-            keep the old one
-            else {
-                //No bundle
-                result[3] = "";
-            }*/
+            }
         }else{
             result[3] = null;
             result[4] = null;
         }
-
-
-
-
 
         return result;
     }
@@ -726,6 +736,10 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             if (LOGGING) Log.d(TAG,"result[4]" + result[4]);
             if (LOGGING) Log.d(TAG,"result[5]" + result[5]);
             if (LOGGING) Log.d(TAG,"result[6]" + result[6]);
+            if(result[7]!=null)
+                if (LOGGING) Log.d(TAG,"result[7]" + result[7]);
+            if(result[8]!=null)
+                if (LOGGING) Log.d(TAG,"result[8]" + result[8]);
 
             if(result[2]==null){
                 result[2]="100";
@@ -742,62 +756,143 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             Canvas canvas = new Canvas(bitmap);
             int borderSize = 0;
             int innerSize = 0;
-            boolean withVoice;
 
-            if(result[3]=="0 m") {
-                //Only data info **********************
-                withVoice = false;
-
-                //borderSize = (int) (squareSide * 0.03);
-                //innerSize = (int) (squareSide * 0.07);
-                borderSize = (int) (squareSide * 0.02);
-                innerSize = (int) (squareSide * 0.12);
+            if(perCount == 5) {
+                if(LOGGING) Log.d(TAG, "Data, Digital Voice and Voice");
+                //Data, Digital Voice and Voice **********************
+                borderSize = (int) (squareSide * 0.01);
+                innerSize = (int) (squareSide * 0.04);
 
                 Paint p1 = new Paint();
                 p1.setAntiAlias(true);
                 p1.setFilterBitmap(true);
                 p1.setDither(true);
-                p1.setColor(Color.parseColor("#00A5FF"));
+                p1.setColor(Color.parseColor("#00A5FF"));//BORDER (BLUE)
                 RectF rectF1 = new RectF(0, 0, squareSide, squareSide);
                 canvas.drawArc (rectF1, 0, 360, true, p1);
 
+                //Data
                 Paint p2 = new Paint();
                 p2.setAntiAlias(true);
                 p2.setFilterBitmap(true);
                 p2.setDither(true);
                 p2.setColor(Color.WHITE);
-                RectF rectF2 = new RectF(borderSize, borderSize, squareSide-borderSize, squareSide-borderSize);
+                RectF rectF2 = new RectF(borderSize,
+                                         borderSize,
+                                         squareSide-borderSize,
+                                         squareSide-borderSize);
                 canvas.drawArc (rectF2, 0, 360, true, p2);
 
-                Paint p3 = new Paint();
-                p3.setAntiAlias(true);
-                p3.setFilterBitmap(true);
-                p3.setDither(true);
 
-                int[] colors_p3 = {Color.parseColor("#00A5FF"),
-                                   Color.parseColor("#5AEB00"),
-                                   Color.parseColor("#00A5FF"),
-                                   Color.parseColor("#5AEB00")};
-                float angle_p3 = (float) (Float.parseFloat(result[2]) * 3.6);
-                float[] positions_p3 = {0, (angle_p3/360f) / 2f, angle_p3/360f, 1};
-                SweepGradient gradient_p3 = new SweepGradient(squareSide/2, squareSide/2, colors_p3 , positions_p3);
-                Matrix gm_3 = new Matrix();
-                gradient_p3.getLocalMatrix(gm_3);
-                gm_3.postRotate(-90,squareSide/2, squareSide/2);
-                gradient_p3.setLocalMatrix(gm_3);
-                p3.setShader(gradient_p3);
-                RectF rectF3 = new RectF(borderSize, borderSize, squareSide - borderSize, squareSide - borderSize);
-                canvas.drawArc(rectF3, 270, (int) (Double.parseDouble(result[2]) * 3.6), true, p3);
+                Paint p31 = new Paint();
+                p31.setAntiAlias(true);
+                p31.setFilterBitmap(true);
+                p31.setDither(true);
+
+                //INNER (BLUE-TO-GREEN)
+                int[] colors_p31 = {Color.parseColor("#00A5FF"),
+                                    Color.parseColor("#5AEB00"),
+                                    Color.parseColor("#00A5FF"),
+                                    Color.parseColor("#5AEB00")};
+                float angle_p31 = (float) (Float.parseFloat(result[2]) * 3.6);
+                float[] positions_p31 = {0, (angle_p31/360f) / 2f, angle_p31/360f, 1};
+                SweepGradient gradient_p31 = new SweepGradient(squareSide/2, squareSide/2, colors_p31 , positions_p31);
+                Matrix gm_31 = new Matrix();
+                gradient_p31.getLocalMatrix(gm_31);
+                gm_31.postRotate(-90,squareSide/2, squareSide/2);
+                gradient_p31.setLocalMatrix(gm_31);
+                p31.setShader(gradient_p31);
+                RectF rectF31 = new RectF(borderSize / 2,
+                                          borderSize / 2,
+                                          squareSide - (borderSize / 2),
+                                          squareSide - (borderSize / 2));
+                canvas.drawArc(rectF31, 270, (int) (Double.parseDouble(result[2]) * 3.6), true, p31);
+
+                //Digital Voice
+                Paint p32 = new Paint();
+                p32.setAntiAlias(true);
+                p32.setFilterBitmap(true);
+                p32.setDither(true);
+                p32.setColor(Color.WHITE);
+                RectF rectF32 = new RectF(2 * borderSize + innerSize,
+                                          2 * borderSize + innerSize,
+                                          squareSide-(2 * borderSize + innerSize),
+                                          squareSide-(2 * borderSize + innerSize));
+                canvas.drawArc (rectF32, 0, 360, true, p32);
+
+
+                Paint p33 = new Paint();
+                p33.setAntiAlias(true);
+                p33.setFilterBitmap(true);
+                p33.setDither(true);
+                //INNER (ORANGE-TO-RED)
+                int[] colors_p33 =  {Color.parseColor("#FF7000"),
+                                     Color.parseColor("#FF0095"),
+                                     Color.parseColor("#FF7000"),
+                                     Color.parseColor("#FF0095")};
+
+                float angle_p33 = (float) (Float.parseFloat(result[4]) * 3.6);
+                float[] positions_p33 = {0, (angle_p33/360f) / 2f, angle_p33/360f, 1};
+                SweepGradient gradient_p33 = new SweepGradient(squareSide/2, squareSide/2, colors_p33 , positions_p33);
+                Matrix gm_33 = new Matrix();
+                gradient_p33.getLocalMatrix(gm_33);
+                gm_33.postRotate(-90, squareSide/2, squareSide/2);
+                gradient_p33.setLocalMatrix(gm_33);
+                p33.setShader(gradient_p33);
+                RectF rectF33 = new RectF(2 * borderSize + innerSize,
+                                          2 * borderSize + innerSize,
+                                          squareSide-(2 * borderSize + innerSize),
+                                          squareSide-(2 * borderSize + innerSize));
+                canvas.drawArc(rectF33, 270, (int) (Double.parseDouble(result[4]) * 3.6), true, p33);
+
+                //NUEVO
+                //Voice
+                Paint p34 = new Paint();
+                p34.setAntiAlias(true);
+                p34.setFilterBitmap(true);
+                p34.setDither(true);
+                p34.setColor(Color.WHITE);
+                RectF rectF34 = new RectF(2 * borderSize + 2 * innerSize,
+                        2 * borderSize + 2 * innerSize,
+                        squareSide-(2 * borderSize + 2 * innerSize),
+                        squareSide-(2 * borderSize + 2 * innerSize));
+                canvas.drawArc (rectF34, 0, 360, true, p34);
+
+
+                Paint p35 = new Paint();
+                p35.setAntiAlias(true);
+                p35.setFilterBitmap(true);
+                p35.setDither(true);
+                //INNER (ORANGE-TO-RED)
+                int[] colors_p35 =  {Color.parseColor("#FFAF00"),
+                                     Color.parseColor("#FF0095"),
+                                     Color.parseColor("#FFAF00"),
+                                     Color.parseColor("#FF0095")};
+
+                float angle_p35 = (float) (Float.parseFloat(result[8]) * 3.6);
+                float[] positions_p35 = {0, (angle_p35/360f) / 2f, angle_p35/360f, 1};
+                SweepGradient gradient_p35 = new SweepGradient(squareSide/2, squareSide/2, colors_p35 , positions_p35);
+                Matrix gm_35 = new Matrix();
+                gradient_p35.getLocalMatrix(gm_35);
+                gm_35.postRotate(-90, squareSide/2, squareSide/2);
+                gradient_p35.setLocalMatrix(gm_35);
+                p35.setShader(gradient_p35);
+                RectF rectF35 = new RectF(2 * borderSize + 2 * innerSize,
+                        2 * borderSize + 2 * innerSize,
+                        squareSide-(2 * borderSize + 2 * innerSize),
+                        squareSide-(2 * borderSize + 2 * innerSize));
+                canvas.drawArc(rectF35, 270, (int) (Double.parseDouble(result[8]) * 3.6), true, p35);
+                //FIN NUEVO
 
                 Paint p4 = new Paint();
                 p4.setAntiAlias(true);
                 p4.setFilterBitmap(true);
                 p4.setDither(true);
-                p4.setColor(Color.parseColor("#00A5FF"));
-                RectF rectF4 = new RectF(borderSize + innerSize,
-                        borderSize + innerSize,
-                        squareSide-(borderSize + innerSize),
-                        squareSide-(borderSize + innerSize));
+                p4.setColor(Color.parseColor("#00A5FF"));//BLUE
+                RectF rectF4 = new RectF(2 * borderSize + 3 * innerSize,
+                                         2 * borderSize + 3 * innerSize,
+                                         squareSide-(2 * borderSize + 3 * innerSize),
+                                         squareSide-(2 * borderSize + 3 * innerSize));
                 canvas.drawArc (rectF4, 0, 360, true, p4);
 
                 Paint p5 = new Paint();
@@ -805,15 +900,15 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
                 p5.setFilterBitmap(true);
                 p5.setDither(true);
                 p5.setColor(Color.WHITE);
-                RectF rectF5 = new RectF(borderSize * 2 + innerSize,
-                        borderSize * 2 + innerSize,
-                        squareSide-(borderSize * 2 + innerSize),
-                        squareSide-(borderSize * 2 + innerSize));
-                canvas.drawArc (rectF5,  0, 360, true, p5);
 
+                RectF rectF5 = new RectF(3 * borderSize + 3 * innerSize,
+                                         3 * borderSize + 3 * innerSize,
+                                         squareSide-(3 * borderSize + 3 * innerSize),
+                                         squareSide-(3 * borderSize + 3 * innerSize));
+                canvas.drawArc (rectF5,  0, 360, true, p5);
             }else{
-                //Data and Voice **********************
-                withVoice = true;
+                //Data and Digital Voice **********************
+                if(LOGGING) Log.d(TAG, "Data and Digital Voice");
                 borderSize = (int) (squareSide * 0.01);
                 innerSize = (int) (squareSide * 0.06);
 
@@ -931,87 +1026,103 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             int voiceSize = 0;
             int daysSize = 0;
             int refDim;
-            if (withVoice){
-                refDim = innerSize;
+            if(perCount == 5){
+                refDim = innerSize + 2*borderSize;
             }else{
-                refDim = innerSize / 2;
+                refDim = innerSize;
+            }
+            String voiceText = "";
+            if(perCount == 5){
+                if(result[3]!=null && result[3] != "" && result[7]!=null && result[7] != "") {
+                    voiceText = result[3] + "|" + result[7];
+                }
+            }else{
+                voiceText = result[3];
             }
 
             if(result[5]!=null && result[5] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     if(result[5].length() != 0) {
-                        if (landscape){
-                            daysSize = (int) ((squareSide - (refDim * 10)) / result[5].length());
-                        }else {
-                            daysSize = (int) ((squareSide - (refDim * 9)) / result[5].length());
+                        if (perCount == 5) {
+                            if (landscape) {
+                                daysSize = (int) ((squareSide - (refDim * 12)) / result[5].length());
+                            } else {
+                                daysSize = (int) ((squareSide - (refDim * 11)) / result[5].length());
+                            }
+                        }else{
+                            if (landscape) {
+                                daysSize = (int) ((squareSide - (refDim * 10)) / result[5].length());
+                            } else {
+                                daysSize = (int) ((squareSide - (refDim * 9)) / result[5].length());
+                            }
                         }
                     }
                 }
                 remoteViews.setTextViewText(R.id.dataDays, result[5]);
-            }else{
-                withVoice = false;
             }
 
 
-            if(result[3]!=null && result[3] != "") {
+            if(voiceText!=null && voiceText != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                    if(result[3].length() != 0) {
-                        if (landscape){
-                            voiceSize = (int) ((squareSide - (refDim * 10)) / result[3].length());
-                        }else {
-                            voiceSize = (int) ((squareSide - (refDim * 9)) / result[3].length());
+                    if(voiceText.length() != 0) {
+                        if (perCount == 5) {
+                            if (landscape) {
+                                voiceSize = (int) ((squareSide - (refDim * 5)) / voiceText.length());
+                            } else {
+                                voiceSize = (int) ((squareSide - (refDim * 3)) / voiceText.length());
+                            }
+                        }else{
+                            if (landscape) {
+                                voiceSize = (int) ((squareSide - (refDim * 8)) / voiceText.length());
+                            } else {
+                                voiceSize = (int) ((squareSide - (refDim * 7)) / voiceText.length());
+                            }
                         }
                     }
                 }
-                remoteViews.setTextViewText(R.id.dataVoice, result[3]);
-            }else{
-                withVoice = false;
+                remoteViews.setTextViewText(R.id.dataVoice, voiceText);
             }
 
             if(result[0]!=null && result[0] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                    if (withVoice == true) {
-                        if (landscape){
-                            moneySize = (int) ((squareSide - ( refDim * 8)) / result[0].length());
-                        }else {
-                            moneySize = (int) ((squareSide - ( refDim * 5)) / result[0].length());
+                    if (perCount == 5) {
+                        if (landscape) {
+                            moneySize = (int) ((squareSide - (refDim * 8)) / result[0].length());
+                        } else {
+                            moneySize = (int) ((squareSide - (refDim * 5)) / result[0].length());
                         }
                     }else{
-                        if (landscape){
-                            moneySize = (int) ((squareSide - (refDim * 7)) / result[0].length());
-                        }else {
+                        if (landscape) {
+                            moneySize = (int) ((squareSide - (refDim * 8)) / result[0].length());
+                        } else {
                             moneySize = (int) ((squareSide - (refDim * 5)) / result[0].length());
                         }
                     }
                 }
             }
 
-            if(withVoice) {
-                if (voiceSize < moneySize) {
-                    moneySize = voiceSize;
-                } else {
-                    voiceSize = moneySize;
-                    daysSize = moneySize;
+    /*
+            if (voiceSize < moneySize) {
+                moneySize = voiceSize;
+            } else {
+                voiceSize = moneySize;
+                daysSize = moneySize;
+            }*/
+
+
+            remoteViews.setViewVisibility(R.id.dataVoice, View.VISIBLE);
+
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                if (voiceText.length() != 0) {
+                    if (LOGGING) Log.d(TAG, "min size = " + voiceSize);
+                    remoteViews.setTextViewTextSize(R.id.dataVoice, TypedValue.COMPLEX_UNIT_PX, voiceSize);
+                }
+                if (result[5].length() != 0) {
+                    if (LOGGING) Log.d(TAG, "days size = " + daysSize);
+                    remoteViews.setTextViewTextSize(R.id.dataDays, TypedValue.COMPLEX_UNIT_PX, daysSize);
                 }
             }
-
-            if(withVoice){
-                remoteViews.setViewVisibility(R.id.dataVoice, View.VISIBLE);
-
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                    if(result[3].length() != 0) {
-                        if (LOGGING) Log.d(TAG, "min size = " + voiceSize);
-                        remoteViews.setTextViewTextSize(R.id.dataVoice, TypedValue.COMPLEX_UNIT_PX, voiceSize);
-                    }
-                    if(result[5].length() != 0) {
-                        if (LOGGING) Log.d(TAG, "days size = " + daysSize);
-                        remoteViews.setTextViewTextSize(R.id.dataDays, TypedValue.COMPLEX_UNIT_PX, daysSize);
-                    }
-                }
-                remoteViews.setTextViewText(R.id.dataVoice, result[3]);
-            }else{
-                remoteViews.setViewVisibility(R.id.dataVoice, View.GONE);
-            }
+            remoteViews.setTextViewText(R.id.dataVoice, voiceText);
 
 
             if(result[0]!=null && result[0] != "") {
@@ -1025,23 +1136,15 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
             }
 
 
-
             if(result[1]!=null && result[1] != "") {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     if(result[1].length() != 0) {
                         int dataSize;
-                        if (withVoice == true) {
-                            if (landscape){
-                                dataSize = (int) ((squareSide - (refDim * 7)) / result[1].length());
-                            }else {
-                                dataSize = (int) ((squareSide - (refDim * 5)) / result[1].length());
-                            }
-                        }else{
-                            if (landscape){
-                                dataSize = (int) ((squareSide - (refDim * 6)) / result[1].length());
-                            }else {
-                                dataSize = (int) ((squareSide - (refDim * 5)) / result[1].length());
-                            }
+
+                        if (landscape) {
+                            dataSize = (int) ((squareSide - (refDim * 7)) / result[1].length());
+                        } else {
+                            dataSize = (int) ((squareSide - (refDim * 5)) / result[1].length());
                         }
 
                         if (LOGGING) Log.d(TAG, "data size = " + dataSize);
@@ -1066,7 +1169,7 @@ public class NetworkTask extends AsyncTask<HashMap<String,String>, Void, String[
 
             remoteViews.setOnClickPendingIntent(R.id.dataMoney,pendingIntentForceUpdate);
             remoteViews.setOnClickPendingIntent(R.id.dataNet,pendingIntentForceUpdate);
-            if(result[3]!=null) {
+            if(voiceText!=null) {
                 remoteViews.setOnClickPendingIntent(R.id.dataVoice, pendingIntentForceUpdate);
             }
 

@@ -137,10 +137,12 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
             dataMap.put("dataMoney","0 €");
             dataMap.put("dataNet","");
             dataMap.put("dataPercentage","100");
-            dataMap.put("dataVoiceNet","");
-            dataMap.put("dataVoicePercentage","100");
+            dataMap.put("dataDigitalVoice","");
+            dataMap.put("dataDigitalVoicePercentage","100");
             dataMap.put("dataDays","");
             dataMap.put("dataDaysPercentage","100");
+            dataMap.put("dataVoice","");
+            dataMap.put("dataVoicePercentage","100");
             dataMap.put("dataBundlePrice",widgetTuBundlePriceText);
             dataMap.put("dataVAT",widgetTuVATText);
 
@@ -326,10 +328,12 @@ public class UnofficialTuentiWidgetConfigureActivity extends Activity {
                 dataMap.put("dataMoney","0 €");
                 dataMap.put("dataNet","0 MB");
                 dataMap.put("dataPercentage","0");
-                dataMap.put("dataVoiceNet","0m");
-                dataMap.put("dataVoicePercentage","0");
+                dataMap.put("dataDigitalVoice","0m VD");
+                dataMap.put("dataDigitalVoicePercentage","0");
                 dataMap.put("dataDays","0d");
                 dataMap.put("dataDaysPercentage","0");
+                dataMap.put("dataVoice","0m");
+                dataMap.put("dataVoicePercentage","0");
                 dataMap.put("dataBundlePrice","0");
                 dataMap.put("dataVAT","0.21");
 

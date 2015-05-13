@@ -13,7 +13,7 @@
     <string name="configure">Configure</string>
     <string name="user">user: </string>
     <string name="password">password: </string>
-    <string name="create_widget">Create widget</string>
+    <string name="create_widget">Create widget\n(It takes 20s aprox)</string>
     <string name="data_not_found">Data\nnot\nfound</string>
     <string name="nobundle">!Bundle</string>
     <string name="add_bundle_price_cb">Monthly bundle price: </string>
